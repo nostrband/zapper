@@ -21,7 +21,7 @@ function Profile({ event }) {
   return (
     <div className="d-flex flex-row align-items-center ">
       <Link to={`nostr:${nip19.npubEncode(event.pubkey)}`}>
-        <Image rounded width="48" height="48" src={event.meta?.profile?.picture} />
+        <Image rounded style={{objectFit: "cover"}} width="48" height="48" src={event.meta?.profile?.picture} />
       </Link>
       <div className="ms-2 d-flex flex-column">
         <div className="fw-bold">

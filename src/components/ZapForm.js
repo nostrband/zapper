@@ -607,6 +607,7 @@ function ZapForm() {
 
 						<Modal
 							show={showJson}
+							onHide={() => setShowJson(false)}
 							aria-labelledby="contained-modal-title-vcenter"
 							centered
 						>
