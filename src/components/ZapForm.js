@@ -599,7 +599,7 @@ function ZapForm() {
 					<div className="d-flex flex-column">
 						<h4>Event</h4>
 						<Profile event={target} />
-						<div className='mt-2' style={{textOverflow: "ellipsis", overflowX: "hidden"}}>
+						<div className='mt-2' style={{ textOverflow: "ellipsis", overflowX: "hidden" }}>
 							{target.kind === 1 ? target.content
 								: target.kind === 30023 ? (nostr.getTagValue(target, 'title') || nostr.getTagValue(target, 'summary'))
 									: `Kind: ${target.kind}. ` + nostr.getTagValue(target, 'alt')
@@ -656,13 +656,15 @@ function ZapForm() {
 											<Profile event={z} />
 										</Col>
 										{z.weight && (
-											<Col xs="auto">
-												{Math.round(z.weight * 100) + "%"}
-											</Col>
-										)}
-										{z.amount > 0 && (
-											<Col xs="auto" className="ps-3">
-												{formatSats(z.amount)} sats
+											<Col xs="auto" className='d-flex flex-column'>
+												<div>
+													{Math.round(z.weight * 100) + "%"}
+												</div>
+												{z.amount > 0 && (
+													<div>
+														{formatSats(z.amount)} sats
+													</div>
+												)}
 											</Col>
 										)}
 										<Col xs="auto">
