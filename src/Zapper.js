@@ -11,15 +11,15 @@ import ZapForm from './components/ZapForm';
 function Zapper() {
 
   return (
-    <Container className="Zapper mt-5">
+    <Container className="Zapper mt-2">
       <Row>
         <Col>
           <Header />
         </Col>
       </Row>
-      <Row className="mt-5">
+      <Row className="mt-2">
         <Col>
-	  <ZapForm />
+          <ZapForm />
         </Col>
       </Row>
       <Row>

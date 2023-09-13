@@ -1,610 +1,754 @@
 import { useState, useEffect } from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import Alert from 'react-bootstrap/Alert';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { toast } from 'react-toastify';
-import { nip19, nip57 } from '@nostrband/nostr-tools';
-import NDK, { NDKRelay, NDKNip07Signer, NDKEvent } from '@nostrband/ndk';
-
-const TYPE_ZAP = 'zap';
-const TYPE_ANON_ZAP = 'anon-zap';
-const TYPE_SEND_SATS = 'send-sats';
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import Modal from 'react-bootstrap/Modal';
+import InputGroup from 'react-bootstrap/InputGroup';
+import { ArrowClockwise, CaretDown, Check, Play, X } from 'react-bootstrap-icons';
+import { Link, useSearchParams } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import { nip19 } from '@nostrband/nostr-tools';
+import 'react-toastify/dist/ReactToastify.css';
+import {
+	nostr,
+	TYPE_ZAP,
+	TYPE_ANON_ZAP,
+	TYPE_SEND_SATS,
+} from "../nostr"
+import Profile from './Profile';
+import ZapModal from './ZapModal';
+import { formatAmount, formatSats } from '../utils';
 
 const tabs = [
-  {
-    title: 'Zap',
-    value: TYPE_ZAP,
-  },
-  {
-    title: 'Anon zap',
-    value: TYPE_ANON_ZAP,
-  },
-  {
-    title: 'Send sats',
-    value: TYPE_SEND_SATS,
-  },
+	{
+		title: 'Zap',
+		value: TYPE_ZAP,
+	},
+	{
+		title: 'Anon zap',
+		value: TYPE_ANON_ZAP,
+	},
+	{
+		title: 'Send sats',
+		value: TYPE_SEND_SATS,
+	},
 ];
 
-function getTags(e, name) {
-  return e.tags.filter((t) => t.length > 0 && t[0] === name);
-}
+const AMOUNTS = [
+	[21, "👍"],
+	[210, "👏"],
+	[420, "⭐"],
+	[555, "🔥"],
+	[840, "🏅"],
+	[1000, "🤙"],
+	[5000, "💜"],
+	[10000, "😻"],
+	[20000, "🤩"],
+	[50000, "🚀"],
+	[100000, "🤯"],
+	[1000000, "🏆"],
+];
 
-function getTag(e, name) {
-  const tags = getTags(e, name);
-  if (tags.length === 0) return null;
-  return tags[0];
-}
-
-function getTagValue(e, name, index, def) {
-  const tag = getTag(e, name);
-  if (tag === null || !tag.length || (index && index >= tag.length))
-    return def !== undefined ? def : '';
-  return tag[1 + (index || 0)];
-}
-
-function enableWindowInterface(name, cb) {
-  // check window[name] periodically, backoff exponentially,
-  // and if we've detected it give it a bit more time
-  // to init
-  let period = 100;
-  let has = false;
-  async function check() {
-    if (has) {
-      cb();
-    } else {
-      if (name in window) {
-        has = true;
-        // wait until it initializes
-        setTimeout(check, 200);
-      } else {
-        period *= 2;
-        setTimeout(check, period);
-      }
-    }
-  }
-
-  // start
-  check();
-}
-
-let ndkObject = null;
-let hasNip07 = false;
-let hasWebLN = false;
-
-enableWindowInterface('nostr', () => {
-  hasNip07 = true;
-  if (ndkObject)
-    ndkObject.signer = new NDKNip07Signer();
-});
-
-enableWindowInterface('webln', () => {
-  hasWebLN = true;
-  window.webln.enable();
-});
-
-async function getNDK(relays) {
-  if (!ndkObject) {
-    relays = [...new Set([...relays, "wss://relay.nostr.band"])]; 
-    
-    const nip07signer = hasNip07 ? new NDKNip07Signer() : null;
-    ndkObject = new NDK({ signer: nip07signer });
-  }
-    
-  const rs = [];
-  for (const r of relays) {
-    if (ndkObject.pool.relays.get(r))
-      continue;
-      
-    const relay = new NDKRelay(r);
-    ndkObject.pool.addRelay(relay);
-    rs.push(relay.connect());
-  }
-    
-  const to = new Promise((ok) => {
-    setTimeout(ok, 1000);
-  });
-    
-  // wait until all new relays connect, or a timeout is hit
-  await Promise.race([to, Promise.allSettled(rs)]);
-
-  return ndkObject;
-}
-
-async function fetchMetas(ndk, pubkeys) {
-  const filter = {
-    kinds: [0],
-    authors: pubkeys,
-  };
-  let events = await ndk.fetchEvents(filter);
-  events = [...events.values ()];
-  events.forEach(e => {
-    try {
-      e.profile = JSON.parse(e.content);
-    } catch {}
-  });
-  
-  console.log("pubkeys", pubkeys, "events", events);
-
-  return events;
-}
-
-async function fetchEventById(ndk, id) {
-  const filter = {
-    ids: [id]
-  };
-  const event = await ndk.fetchEvent(filter);
-  console.log("id", id, "event", event);
-
-  return event;
-}
-
-async function fetchEventByAddr(ndk, addr) {
-  const v = addr.split(':');
-  const filter = {
-    kinds: [Number(v[0])],
-    authors: [v[1]],
-  };
-  if (v[2] !== "")
-    filter["#d"] = [v[2]];
-
-  const events = await ndk.fetchEvents(filter);
-  console.log("filter", filter, "events", events);
-  for (const e of events.values()) {
-    const d = getTagValue(e, 'd');
-    if (e.kind === Number(v[0]) && e.pubkey === v[1] && d === v[2]) {
-      console.log("addr", addr, "event", e);
-      return e;
-    }
-  }
-
-  return null;
-}
-
-async function fetchInvoice(zap) {
-  const event = encodeURI(JSON.stringify(await zap.zap.toNostrEvent()));
-  const url = `${zap.callback}?amount=${zap.amount}&nostr=${event}`;
-  console.log("invoice url", zap, url);
-	  
-  const res = await fetch(url)
-  const body = await res.json()
-  return body.pr;
-}
-
-async function sendNextZap(zaps, log, updateZap) {
-  
-  const zap = zaps.find(z => !z.status);
-  if (!zap)
-    return null; // all done
-
-  try {
-
-    log(`Zapping ${zap.pubkey}...`);
-    if (!zap.meta)
-      throw new Error("Failed to load profile info for "+zap.pubkey);
-
-    if (zap.type === TYPE_ZAP || zap.type === TYPE_ANON_ZAP) {
-      
-      // get the nostr-invoice url
-      log("Fetching callback...");
-      zap.callback = await nip57.getZapEndpoint(zap.meta);
-      updateZap(zap);
-      log(`Callback: ${zap.callback}`);
-
-      if (zap.type === TYPE_ZAP) {
-	// sign our zap request
-	log("Signing...");
-	await zap.zap.sign();
-	updateZap(zap);
-	log("Signed");
-      } else {
-	// FIXME use ephemeral keys,
-      }
-
-      // get invoice tied to our zap request
-      log("Fetching invoice...");
-      zap.invoice = await fetchInvoice(zap);
-      updateZap(zap);
-      log(`Invoice: ${zap.invoice}`);
-
-      // try to pay w/ webln
-      if (hasWebLN) {
-	log("Paying...");
-	const r = await window.webln.sendPayment(zap.invoice);
-	zap.preimage = r.preimage;
-	updateZap(zap);
-	log(`Paid: ${r.preimage}`);
-	console.log("zap result", r);
-      } else {
-	// show the invoice and wait until it's paid (how?)
-	throw new Error("Only WebLN supported at this point");
-      }
-
-      // FIXME wait until the zap is published, but how?
-      // there are no single-letter tags that can be queries :(
-      
-    } else {
-      // FIXME fetch invoice with LNURL
-      throw new Error("Send sats not implemented yet");
-    }
-    
-    zap.status = 'done';
-  } catch (e) {
-    console.log("Zap send failed", e);
-    zap.error = e;
-    zap.status = 'error';
-  }
-  updateZap(zap);
-
-  return zap;
-}
-
-function arrayEquals(a, b) {
-  return Array.isArray(a) &&
-         Array.isArray(b) &&
-         a.length === b.length &&
-         a.every((val, index) => val === b[index]);
-}
+const COMMENTS = [
+	"👍 Amazing!",
+	"🚀 LFG!",
+	"⭐ Great job!",
+	"👀 Looking good!",
+	"🙏 Thank you!",
+	"💜 Love it!",
+	"👌 Way to go!",
+	"😻 Yes please!",
+	"🏆 Winner!",
+	"💥 BOOM!",
+	"🤣 LMAOF!",
+	"🤯 OMFG!",
+];
 
 function ZapForm() {
 
-  const [searchParams, setSearchParams] = useSearchParams();
+	const [searchParams, setSearchParams] = useSearchParams();
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+	const [isLoading, setIsLoading] = useState(true);
+	const [error, setError] = useState("");
 
-  // single target event or relay-info
-  const [target, setTarget] = useState(null);
+	// single target event or relay-info
+	const [target, setTarget] = useState(null);
 
-  // several zap-split targets
-  const [targetPubkeyWeights, setTargetPubkeyWeights] = useState([]);
-  const [targetMetas, setTargetMetas] = useState([]);
-  const [relays, setRelays] = useState([]);
-  const [metas, setMetas] = useState([]);
-  const [zaps, setZaps] = useState([]);
+	// several zap-split targets
+	const [targetPubkeyWeights, setTargetPubkeyWeights] = useState([]);
+	const [relays, setRelays] = useState([]);
+	const [metas, setMetas] = useState([]);
+	const [zaps, setZaps] = useState([]);
 
-  // params
-  const [id, setId] = useState("");
-  const [amount, setAmount] = useState(0);
-  const [amountValues, setAmountValues] = useState([]);
-  const [type, setType] = useState("zap");
-  const [comment, setComment] = useState("");
-  const [wasAutoSend, setWasAutoSend] = useState(false);
-  const [closeOnSend, setCloseOnSend] = useState(false);
-  const [logs, setLogs] = useState("");
-  const [autoSendTimer, setAutoSendTimer] = useState(0);
-  const [timerId, setTimerId] = useState(undefined);
+	// params
+	const [id, setId] = useState("");
+	const [amount, setAmount] = useState(0);
+	//  const [amountValues, setAmountValues] = useState([]);
+	const [type, setType] = useState("zap");
+	const [comment, setComment] = useState("");
+	const [wasAutoSend, setWasAutoSend] = useState(false);
+	const [closeOnSend, setCloseOnSend] = useState(false);
 
-  const log = (s) => {
-    setLogs(prev => prev + "\n" + s);
-  };
+	// UI state
+	const [logs, setLogs] = useState("");
+	const [autoSendTimer, setAutoSendTimer] = useState(0);
+	const [timerId, setTimerId] = useState(undefined);
+	const [currentZapIndex, setCurrentZapIndex] = useState(-1);
 
-  const updateZap = (zap) => {
-    setZaps(prev => {
-      prev.splice(zap.index, 1, {...zap});
-      return [...prev];
-    });
-  };
-  
-  const emitSend = () => {
-    setTimeout(() => document.getElementById("send").click(), 0);
-  };
+	// controls
+	const [showAmountPicker, setShowAmountPicker] = useState(false);
+	const [showCommentPicker, setShowCommentPicker] = useState(false);
+	const [showLogs, setShowLogs] = useState(false);
+	const [showJson, setShowJson] = useState(false);
 
-  const send = async () => {
+	const log = (s) => {
+		setLogs(prev => prev + "\n" + s);
+	};
 
-    await sendNextZap(zaps, log, updateZap);
+	const updateZap = (zap) => {
+		const copy = { ...zap };
+		setZaps(prev => {
+			prev.splice(zap.index, 1, copy);
+			return [...prev];
+		});
+	};
 
-    // auto-sending next one
-    if (hasWebLN)
-      emitSend();
-  };
+	const emitSend = () => {
+		setTimeout(() => document.getElementById("send").click(), 0);
+	};
 
-  const updateAutoSendTimer = (sec) => {
-    setAutoSendTimer(sec);
-    const to = setTimeout(() => {
-      if (sec > 1) {
-	updateAutoSendTimer(sec - 1);
-      } else {
-	setAutoSendTimer(0);
-	// emitSend();
-	console.log("ZAAAPPPP!!");
-      }
-    }, 1000);
+	const sendZap = async (zap) => {
+		setCurrentZapIndex(zap.index);
 
-    setTimerId(to);
-  };
+		// sends if has webLN, or just fetches invoices etc
+		// if need to send manually
+		return await nostr.sendZap(zap, log, updateZap);
+	};
 
-  const cancel = () => {
-    if (timerId)
-      clearTimeout(timerId);
-    setTimerId(undefined);
-  };
+	const restartZap = (zap) => {
+		if (zap.status === 'done')
+			return;
 
-  useEffect(() => {
-    const id = searchParams.get("id");
-    setId(id);
+		sendZap(zap);
+	};
 
-    const amount = Number(searchParams.get("amount") || 0);
-    setAmount(amount);
-    
-    const newAmountValues = (searchParams.get("amount_values") || "")
-      .split(',')
-      .map(v => v !== "" ? Number(v) : undefined)
-      .filter(v => v !== undefined);
-    if (!arrayEquals(amountValues, newAmountValues))
-      setAmountValues(newAmountValues);
-    
-    const zapType = searchParams.get("type") || "zap";
-    setType(zapType);
-    
-    const comment = searchParams.get("comment") || "";
-    setComment(comment);
-    
-    const closeOnSend = searchParams.get("close_on_send") === "true";
-    setCloseOnSend(closeOnSend);
-    
-    const autoSend = searchParams.get("auto_send") === "true";
-    if (autoSend)
-      setWasAutoSend(true);
+	const sendNextZap = async () => {
 
-  }, [searchParams]);
+		const zap = zaps.find(z => !z.status);
+		if (!zap) {
+			setCurrentZapIndex(-1);
+			return;
+		}
 
-  useEffect(() => {
-    if (wasAutoSend) {
-      updateAutoSendTimer(3);
+		await sendZap(zap);
+		if (zap.status === 'done')
+			toast.success(`Sent ${formatSats(zap.amount)} sats`);
 
-      // make sure we drop the auto-send param and don't let it be returned to
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete("auto_send");
-      setSearchParams(params, { replace: true });
-    }
-  }, [wasAutoSend]);
-  
-  useEffect(() => {
+		// auto-sending next one
+		if ((zap.status === 'done' || zap.status === 'error')
+			&& nostr.hasWebLN()) {
+			emitSend();
+		}
+	};
 
-    const load = async () => {
-      setIsLoading(true);
-      setError("");
+	const currentZap = currentZapIndex >= 0
+		? zaps[currentZapIndex]
+		: null;
 
-      if (!id) {
-	setError("Specify id");
-	return;
-      }
-
-      let targets = [];
-      let target = "";
-      let relays = [];
-      const { type: idType, data } = nip19.decode(id);
-      switch (idType) {
-	case 'npub':
-	  setTargetPubkeyWeights([{
-	    pubkey: data,
-	    weight: 1.0
-	  }]);
-	  break;
-
-	case 'nprofile':
-	  targets.push({
-	    pubkey: data.pubkey,
-	    weight: 1.0
-	  });
-	  relays = data.relays || [];
-	  break;
-
-	case 'note':
-	  target = data;
-	  break;
-
-	case 'nevent':
-	  target = data.id;
-	  relays = data.relays || [];
-	  break;
-
-	case 'naddr':
-	  target = data.kind + ":" + data.pubkey + ":" + data.identifier;
-	  relays = data.relays || [];
-	  break;
-
-	case 'nrelay':
-	  target = data;
-	  break;
-
-	default:
-	  setError("Bad id " + id);
-	  return;
-      }
-
-      let ndk = await getNDK(relays);
-      
-      let targetEvent = null;
-      if (target !== "") {
-	if (target.toLowerCase().startsWith("wss://")) {
-	  setError("Nrelay not supported yet");
-	  return;
-	  // FIXME get relay info
-	} else if (target.includes(":")) {
-	  targetEvent = await fetchEventByAddr(ndk, target);
-	  if (!targetEvent) {
-	    setError("Failed to fetch target event by addr " + target);
-	    return;
-	  }
-	} else {
-	  targetEvent = await fetchEventById(ndk, target);
-	  if (!targetEvent) {
-	    setError("Failed to fetch target event by id " + target);
-	    return;
-	  }
+	const doneCurrentZap = () => {
+		currentZap.status = 'done';
+		updateZap(currentZap);
+		sendNextZap(); // next one
 	}
 
-	setTarget(targetEvent);
-      }
+	const updateAutoSendTimer = (sec) => {
+		setAutoSendTimer(sec);
+		const to = setTimeout(() => {
+			if (sec > 1) {
+				updateAutoSendTimer(sec - 1);
+			} else {
+				setAutoSendTimer(0);
+				emitSend();
+			}
+		}, 1000);
 
-      // check zap tags of the target event for zap-split logic
-      if (targetEvent) {
-	const tags = targetEvent.tags.filter(t => t.length >= 2 && t[0] === "zap");
-	if (tags.length) {
+		setTimerId(to);
+	};
 
-	  // collect zap-split targets
-	  tags.forEach(z => {
+	const cancel = () => {
+		if (timerId)
+			clearTimeout(timerId);
+		setTimerId(undefined);
+		setAutoSendTimer(0);
+	};
 
-	    // collect relays
-	    if (z.length >= 3)
-	      relays.push(z[2]);
+	// read params from query string
+	useEffect(() => {
+		const id = searchParams.get("id");
+		setId(id);
 
-	    const pubkey = z[1];
-	    const weight = z.length >= 4 ? Number(z[3]) : 0.0;
-	    targets.push({ pubkey, weight });
-	  });
+		const amount = Number(searchParams.get("amount") || 0);
+		setAmount(amount);
 
-	  // all weights are zero
-	  if (!targets.find(t => t.weight > 0.0))
-	    targets.forEach(z => z.weight = 1.0); // set equal weights
+		//    const newAmountValues = (searchParams.get("amount_values") || "")
+		//      .split(',')
+		//      .map(v => v !== "" ? Number(v) : undefined)
+		//      .filter(v => v !== undefined);
+		//    if (!arrayEquals(amountValues, newAmountValues))
+		//      setAmountValues(newAmountValues);
 
-	  // make sure ndk connects to these relays too
-	  ndk = await getNDK(relays);
-	} else {
-	  targets.push({
-	    pubkey: targetEvent.pubkey,
-	    weight: 1.0,
-	  });
+		const zapType = searchParams.get("type") || "zap";
+		setType(zapType);
+
+		const comment = searchParams.get("comment") || "";
+		setComment(comment);
+
+		const closeOnSend = searchParams.get("close_on_send") === "true";
+		setCloseOnSend(closeOnSend);
+
+		const autoSend = searchParams.get("auto_send") === "true";
+		if (autoSend)
+			setWasAutoSend(true);
+
+	}, [searchParams]);
+
+	// load the target if id changes
+	useEffect(() => {
+
+		const load = async () => {
+			if (!id) {
+				if (!searchParams.get("id"))
+					setError("Specify id");
+				return;
+			}
+
+			let targets = [];
+			let target = "";
+			let relays = [];
+			const { type: idType, data } = nip19.decode(id);
+			switch (idType) {
+				case 'npub':
+					targets.push({
+						pubkey: data,
+						weight: 1.0
+					});
+					break;
+
+				case 'nprofile':
+					targets.push({
+						pubkey: data.pubkey,
+						weight: 1.0
+					});
+					relays = data.relays || [];
+					break;
+
+				case 'note':
+					target = data;
+					break;
+
+				case 'nevent':
+					target = data.id;
+					relays = data.relays || [];
+					break;
+
+				case 'naddr':
+					target = data.kind + ":" + data.pubkey + ":" + data.identifier;
+					relays = data.relays || [];
+					break;
+
+				case 'nrelay':
+					target = data;
+					break;
+
+				default:
+					setError("Bad id " + id);
+					return;
+			}
+
+			let ndk = await nostr.getNDK(relays);
+
+			let targetEvent = null;
+			if (target !== "") {
+				if (target.toLowerCase().startsWith("wss://")) {
+					setError("Nrelay not supported yet");
+					return;
+					// FIXME get relay info
+				} else if (target.includes(":")) {
+					targetEvent = await nostr.fetchEventByAddr(ndk, target);
+					if (!targetEvent) {
+						setError("Failed to fetch target event by addr " + target);
+						return;
+					}
+				} else {
+					targetEvent = await nostr.fetchEventById(ndk, target);
+					if (!targetEvent) {
+						setError("Failed to fetch target event by id " + target);
+						return;
+					}
+				}
+			}
+
+			// check zap tags of the target event for zap-split logic
+			if (targetEvent) {
+				const tags = targetEvent.tags.filter(t => t.length >= 2 && t[0] === "zap");
+				if (tags.length) {
+
+					// collect zap-split targets
+					tags.forEach(z => {
+
+						// collect relays
+						if (z.length >= 3)
+							relays.push(z[2]);
+
+						const pubkey = z[1];
+						const weight = z.length >= 4 ? Number(z[3]) : 0.0;
+						targets.push({ pubkey, weight });
+					});
+
+					// all weights are zero
+					if (!targets.find(t => t.weight > 0.0))
+						targets.forEach(z => z.weight = 1.0); // set equal weights
+
+					// make sure ndk connects to these relays too
+					ndk = await nostr.getNDK(relays);
+				} else {
+					targets.push({
+						pubkey: targetEvent.pubkey,
+						weight: 1.0,
+					});
+				}
+			}
+
+			// no targets? we're done
+			if (targets.length === 0) {
+				setError("No zap target found");
+				return;
+			}
+
+			setTargetPubkeyWeights(targets);
+			setRelays(relays);
+
+			const pubkeys = targets.map(pw => pw.pubkey);
+			if (targetEvent)
+				pubkeys.push(targetEvent.pubkey);
+
+			const metas = await nostr.fetchMetas(ndk, pubkeys);
+			setMetas(metas);
+			console.log("metas", metas);
+
+			if (targetEvent)
+				targetEvent.meta = metas.find(m => m.pubkey === targetEvent.pubkey);
+
+			setTarget(targetEvent);
+		};
+
+		setIsLoading(true);
+		setError("");
+
+		load().catch(console.error).finally(() => {
+			setIsLoading(false);
+		});
+
+	}, [id]);
+
+	// recalculate the zap array if amount or targets change
+	useEffect(() => {
+		const update = async () => {
+			const ndk = await nostr.getNDK([]);
+			const totalWeight = targetPubkeyWeights.reduce((total, pw) => total += pw.weight, 0);
+			const zaps = targetPubkeyWeights.map((pw, index) => {
+
+				const weight = pw.weight / totalWeight;
+				const msats = Math.floor(1000 * amount * weight);
+				const zap = nostr.createZap(ndk, {
+					amount,
+					comment,
+					relays,
+					msats,
+					pubkey: pw.pubkey,
+					target,
+				});
+
+				const meta = metas.find(m => m.pubkey === pw.pubkey);
+
+				return {
+					index,
+					zap,
+					weight,
+					meta,
+					type,
+					pubkey: pw.pubkey,
+					amount: msats,
+					comment,
+					status: '',
+				}
+			});
+
+			if (zaps.length > 0) {
+				console.log("zaps", zaps);
+				setZaps(zaps);
+			}
+
+			return zaps;
+		};
+
+		if (metas.length > 0 && targetPubkeyWeights.length > 0) {
+			// recalc
+			update()
+				.then((zaps) => {
+					if (amount > 0 && zaps.length > 0 && wasAutoSend) {
+						// set the timer
+						updateAutoSendTimer(3);
+						setWasAutoSend(false);
+					}
+				})
+				.catch(console.error)
+		}
+
+	}, [target, targetPubkeyWeights, metas, amount, type, comment]);
+
+	// launch the auto-send 
+	useEffect(() => {
+		if (wasAutoSend) {
+			// make sure we drop the auto-send param and don't let it be returned to
+			const params = new URLSearchParams(searchParams.toString());
+			params.delete("auto_send");
+			setSearchParams(params, { replace: true });
+		}
+	}, [wasAutoSend]);
+
+	if (error) {
+		return (
+			<div>
+				<h4>Error</h4>
+				<div>{error}</div>
+				<Button onClick={() => window.location.reload()}>Retry</Button>
+			</div>
+		)
 	}
-      }
 
-      // no targets? we're done
-      if (targets.length === 0) {
-	setError("No zap target found");
-	return;
-      }
-
-      setTargetPubkeyWeights(targets);
-      setRelays(relays);
-
-      const pubkeys = targets.map(pw => pw.pubkey);
-      if (targetEvent)
-	pubkeys.push(targetEvent.pubkey);
-      
-      const metas = await fetchMetas(ndk, pubkeys);
-      setMetas(metas);
-      console.log("metas", metas);
-	
-      const totalWeight = targets.reduce((total, pw) => total += pw.weight, 0);
-      const zaps = targets.map((pw, index)  => {
-	
-	const msats = Math.floor(1000 * amount * pw.weight / totalWeight);      
-	const zap = new NDKEvent(ndk, {
-	  kind: 9734,
-	  content: comment,
-	  created_at: Math.floor(Date.now() / 1000),
-	  tags: [
-	    ["relays", ...relays],
-	    ["amount", msats.toString()],
-	    ["p", pw.pubkey],
-	  ],
-	});
-
-	if (target) {
-	  if (target.kind === 0 || target.kind === 3 
-	      || (target.kind >= 10000 && target.kind < 20000)
-	      || (target.kind >= 30000 && target.kind < 40000)) 
-	    zap.tags.push(["a", target.kind + ":" + target.pubkey + ":" + getTagValue(target, 'd')]);
-	  else
-	    zap.tags.push(["e", target]);
+	const isNewZap = !zaps.find(z => z.status);
+	let status = "";
+	if (!isNewZap) {
+		let paid = zaps.reduce((total, zap) => {
+			return total + (zap.status === 'done' ? zap.amount : 0);
+		}, 0);
+		const done = zaps.filter(z => z.status === 'done').length;
+		//		const todo = zaps.filter(z => !z.status).length;
+		const error = zaps.filter(z => z.status === 'error').length;
+		const todo = done === zaps.length ? done : `${done}/${zaps.length}`;
+		status = `Sent ${formatSats(paid)} sats to ${todo} recipients`;
+		if (error)
+			status += `, ${error} errors`;
 	}
 
-	const meta = metas.find(m => m.pubkey === pw.pubkey);
-	
-	return {
-	  index,
-	  zap,
-	  meta,
-	  type,
-	  pubkey: pw.pubkey,
-	  amount: msats,
-	}
-      });
+	return (
+		<div>
+			<ToastContainer />
 
-      console.log("zaps", zaps);      
+			<div>
+				<ul className="nav nav-pills mb-3">
+					{tabs.map((tab) => {
+						return (
+							<li
+								key={tab.value}
+								className="nav-item"
+							>
+								<a
+									className={`nav-link ${type === tab.value && 'active'
+										}`}
+									href="#"
+									onClick={(e) => { e.preventDefault(); setType(tab.value) }}
+								>
+									{tab.title}
+								</a>
+							</li>
+						);
+					})}
+				</ul>
+				<p>
+					{type === TYPE_ZAP
+						? 'Zap will be published on Nostr under your name.'
+						: type === TYPE_ANON_ZAP
+							? 'Zap will be published on Nostr anonymously.'
+							: "No event will be published on Nostr."}
+				</p>
 
-      setZaps(zaps);
-    };
+				<Form>
+					<h4>Amount</h4>
 
-    load ().catch(console.error);
+					<Modal
+						show={showAmountPicker}
+						onHide={() => setShowAmountPicker(false)}
+						aria-labelledby="contained-modal-title-vcenter"
+						centered
+					>
+						<Modal.Header closeButton>
+							<Modal.Title>Pick amount</Modal.Title>
+						</Modal.Header>
+						<Modal.Body>
 
-  }, [id, amount, amountValues, type, comment]);
-  
-  if (error)
-    return (<h4>Error: {error}</h4>);
-  
-  // <h4 className="mt-5">Zap</h4>
-  return (
-    <div>
-      <div>
-	<Form>
-	  <ul className="nav nav-pills mt-3 mb-3">
-	    {tabs.map((tab) => {
-	      return (
-		<li
-		  key={tab.value}
-		  className="nav-item"
-		>
-		  <a
-		    className={`nav-link ${
-                    type === tab.value ? 'active' : ''
-                  }`}
-		    href="#"
-		    onClick={(e) => { e.preventDefault(); setType(tab.value)} }
-		  >
-		    {tab.title}
-		  </a>
-		</li>
-	      );
-	    })}
-          </ul>
-          <p>
-            {type === TYPE_ZAP
-            ? 'Zap event will be published on Nostr on your behalf.'
-	    : type === TYPE_ANON_ZAP
-            ? 'Zap event will be published on Nostr anonymously.'
-            : "No event will be published on Nostr."}
-          </p>
+							<Container className="p-0">
+								<Row>
+									{AMOUNTS.map(ve => (
+										<Col key={ve} md="2" xs="4" className="mb-2">
+											<Button
+												variant={amount === ve[0] ? "primary" : "outline-secondary"}
+												className="w-100"
+												onClick={() => { setAmount(ve[0]); setShowAmountPicker(false); }}
+											>
+												<b>{formatAmount(ve[0])} </b>
+												{ve[1]}
+											</Button>
+										</Col>
+									))}
+								</Row>
+							</Container>
 
-	  {target && target.id && (
-	    <div>Event: {target.id}</div>
-	  )}
+						</Modal.Body>
+						<Modal.Footer className="d-flex flex-column">
+							<Button variant="outline-secondary" size="lg" className="w-100" onClick={() => setShowAmountPicker(false)}>
+								Close
+							</Button>
+						</Modal.Footer>
+					</Modal>
 
-	  {targetPubkeyWeights.map(tw => (
-	    <div key={tw.pubkey}>Target: {tw.pubkey}:{tw.weight}</div>
-	  ))}
+					<InputGroup className="mb-3">
+						<Form.Control
+							placeholder="Enter or pick amount"
+							aria-label="Enter or pick amount"
+							aria-describedby="pick-amount"
+							type="number"
+							value={amount || ""}
+							onChange={(e) => setAmount(Number(e.target.value))}
+						/>
+						<Button variant="outline-secondary" id="pick-amount" onClick={() => setShowAmountPicker(true)}>
+							<CaretDown /> Pick
+						</Button>
+					</InputGroup>
 
-	  <div>Amount: {amount}</div>
+					{type !== TYPE_SEND_SATS && (
+						<>
+							<h4>Comment</h4>
 
-	  {amountValues.length > 0 && amountValues.map(av => (
-	    <div key={av}>AmountValue: {av}</div>
-	  ))}
+							<Modal
+								show={showCommentPicker}
+								onHide={() => setShowCommentPicker(false)}
+								aria-labelledby="contained-modal-title-vcenter"
+								centered
+							>
+								<Modal.Header closeButton>
+									<Modal.Title>Pick comment</Modal.Title>
+								</Modal.Header>
+								<Modal.Body>
 
-	  {zaps.map(z => (
-	    <div key={z.index}>Split: {z.pubkey} : {z.amount} {z.status}</div>
-	  ))}
+									<Container className="p-0">
+										<Row>
+											{COMMENTS.map(c => (
+												<Col key={c} md="6" xs="12" className="mb-2">
+													<Button
+														variant={comment === c ? "primary" : "outline-secondary"}
+														className="w-100"
+														onClick={() => { setComment(c); setShowCommentPicker(false); }}
+													>
+														<b>{c}</b>
+													</Button>
+												</Col>
+											))}
+										</Row>
+									</Container>
 
-	  <div>Comment: {comment}</div>
+								</Modal.Body>
+								<Modal.Footer className="d-flex flex-column">
+									<Button variant="outline-secondary" size="lg" className="w-100" onClick={() => setShowCommentPicker(false)}>
+										Close
+									</Button>
+								</Modal.Footer>
+							</Modal>
 
-	  <div>
-	    <button id="send" onClick={(e) => { e.preventDefault(); send() }}>send</button>
-	  </div>
-	  {autoSendTimer && (
-	    <div>
-	      <div>Auto-zapping in {autoSendTimer} sec...</div>
-	      <button onClick={(e) => { e.preventDefault(); cancel() }}>cancel</button>
-	    </div>
-	  )}
-	  
-	  <div>Logs:
-	    <pre>{logs}</pre>
-	  </div>
-	</Form>
-      </div>
-    </div>
-  );
+							<InputGroup className="mb-3">
+								<Form.Control
+									placeholder="Enter or pick comment (optional)"
+									aria-label="Enter or pick comment (optional)"
+									aria-describedby="pick-comment"
+									as="textarea"
+									rows={1}
+									value={comment}
+									onChange={(e) => setComment(e.target.value)}
+								/>
+								<Button variant="outline-secondary" id="pick-comment" onClick={() => setShowCommentPicker(true)}>
+									<CaretDown /> Pick
+								</Button>
+							</InputGroup>
+
+						</>
+					)}
+
+				</Form>
+
+				{target && target.id && (
+					<div className="d-flex flex-column">
+						<h4>Event</h4>
+						<Profile event={target} />
+						<div className='mt-2'>
+							{target.kind === 1 ? target.content
+								: target.kind === 30023 ? (nostr.getTagValue(target, 'title') || nostr.getTagValue(target, 'summary'))
+									: `Kind: ${target.kind}. ` + nostr.getTagValue(target, 'alt')
+							}
+						</div>
+						<div>
+							<small className="text-muted">
+								<span>{new Date(target.created_at * 1000).toLocaleString()}</span>
+								<Link className="ms-1 text-secondary" onClick={() => setShowJson(true)}>view json</Link>
+							</small>
+						</div>
+
+						<Modal
+							show={showJson}
+							aria-labelledby="contained-modal-title-vcenter"
+							centered
+						>
+							<Modal.Header closeButton>
+								<Modal.Title>Event json</Modal.Title>
+							</Modal.Header>
+							<Modal.Body>
+								<pre style={{ overflowY: "scroll", height: "300px", border: "1px solid #ddd" }}>
+									{JSON.stringify({
+										id: target.id,
+										pubkey: target.pubkey,
+										kind: target.kind,
+										created_at: target.created_at,
+										tags: target.tags,
+										content: target.content,
+										sig: target.sig,
+									}, null, 2)}
+								</pre>
+							</Modal.Body>
+							<Modal.Footer className="d-flex flex-column">
+								<Button variant="outline-secondary" size="lg" className="w-100" onClick={() => setShowJson(false)}>
+									Close
+								</Button>
+							</Modal.Footer>
+						</Modal>
+
+					</div>
+				)}
+
+
+				{zaps.length > 0 && (
+					<div className="d-flex flex-column mt-3">
+						<h4>{zaps.length > 1 ? "Recipients" : "Recipient"}</h4>
+						<Container className="p-0">
+							{zaps.map(z => {
+								return (
+									<Row key={z.pubkey} className="gx-2 mb-2 align-items-center">
+										<Col xs="7">
+											<Profile event={z} />
+										</Col>
+										{z.weight && (
+											<Col xs="auto">
+												{Math.round(z.weight * 100) + "%"}
+											</Col>
+										)}
+										{z.amount > 0 && (
+											<Col xs="auto" className="ps-3">
+												{formatSats(z.amount)} sats
+											</Col>
+										)}
+										<Col xs="auto">
+											<div onClick={() => restartZap(z)}>
+												{(() => {
+													switch (z.status) {
+														case '':
+															return !isNewZap && (<Play />);
+														case 'paying':
+														case 'waiting':
+															return (<ArrowClockwise />);
+														case 'error': return (<X />);
+														case 'done': return (<Check />);
+													}
+												})()
+												}
+											</div>
+										</Col>
+									</Row>
+								)
+							})}
+						</Container>
+					</div>
+				)}
+
+				{isNewZap && (
+					<div className="mt-3">
+						<h4>Confirm</h4>
+						<Button
+							variant="outline-primary"
+							size="lg"
+							onClick={sendNextZap}
+							disabled={!amount || !zaps.length}
+						>
+							{type === TYPE_SEND_SATS ? "Send" : "Zap"} {amount && `${amount}`} sats
+							{zaps.length > 1 && ` to ${zaps.length} recipients`}
+						</Button>
+					</div>
+
+				)}
+
+				{!isNewZap && (
+					<div className="mt-3">
+						<h4>{status}</h4>
+					</div>
+				)}
+
+				<div className='d-none' id='send' onClick={sendNextZap}></div>
+
+				<Modal
+					show={autoSendTimer > 0}
+					onHide={cancel}
+					aria-labelledby="contained-modal-title-vcenter"
+					centered
+				>
+					<Modal.Header closeButton>
+						<Modal.Title>Auto zapping in {autoSendTimer} seconds...</Modal.Title>
+					</Modal.Header>
+					<Modal.Body>Click cancel to zap manually.</Modal.Body>
+					<Modal.Footer className="d-flex flex-column">
+						<Button variant="outline-primary" size="lg" className="w-100" onClick={cancel}>
+							Cancel
+						</Button>
+					</Modal.Footer>
+				</Modal>
+
+				{currentZap && (
+					<ZapModal
+						isOpen={currentZap}
+						onClose={() => setCurrentZapIndex(-1)}
+						currentZap={currentZap}
+						zaps={zaps}
+						onDone={doneCurrentZap}
+					/>
+				)}
+				{logs && (
+					<div className="mt-3">
+						{!showLogs && (
+							<Button
+								size="sm"
+								variant="outline-secondary"
+								onClick={() => setShowLogs(true)}
+							>
+								View logs
+							</Button>
+						)}
+						{showLogs && (
+							<pre>{logs}</pre>
+						)}
+					</div>
+				)}
+			</div>
+		</div>
+	);
 }
 
 export default ZapForm;
