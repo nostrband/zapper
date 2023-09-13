@@ -172,7 +172,7 @@ async function fetchInvoiceCallback(meta) {
       const [name, domain] = lud16.split('@')
       lnurl = `https://${domain}/.well-known/lnurlp/${name}`
     } else {
-      return null
+      return {}
     }
 
     const res = await fetch(lnurl);
@@ -202,6 +202,9 @@ export async function sendZap(zap, log, updateZap) {
     log("Fetching callback...");
     const { callback, canNostr } = await fetchInvoiceCallback(zap.meta);
     zap.callback = callback;
+    if (!callback)
+      throw new Error("Failed to fetch invoice endpoint");
+
     if (zap.type !== TYPE_SEND_SATS && !canNostr)
       throw new Error("Zaps not supported by recipient");
 

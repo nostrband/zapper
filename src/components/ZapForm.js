@@ -131,6 +131,8 @@ function ZapForm() {
 		if (zap.status === 'done')
 			return;
 
+		zap.status = '';
+		updateZap(zap);
 		sendZap(zap);
 	};
 
@@ -266,6 +268,7 @@ function ZapForm() {
 					setError("Bad id " + id);
 					return;
 			}
+			relays = relays.filter(r => r != '');
 
 			let ndk = await nostr.getNDK(relays);
 
@@ -299,7 +302,7 @@ function ZapForm() {
 					tags.forEach(z => {
 
 						// collect relays
-						if (z.length >= 3)
+						if (z.length >= 3 && z[2] != '')
 							relays.push(z[2]);
 
 						const pubkey = z[1];
@@ -588,11 +591,15 @@ function ZapForm() {
 
 				</Form>
 
+				{isLoading && (
+					<h4>Loading...</h4>
+				)}
+
 				{target && target.id && (
 					<div className="d-flex flex-column">
 						<h4>Event</h4>
 						<Profile event={target} />
-						<div className='mt-2'>
+						<div className='mt-2' style={{textOverflow: "ellipsis", overflowX: "hidden"}}>
 							{target.kind === 1 ? target.content
 								: target.kind === 30023 ? (nostr.getTagValue(target, 'title') || nostr.getTagValue(target, 'summary'))
 									: `Kind: ${target.kind}. ` + nostr.getTagValue(target, 'alt')
@@ -681,7 +688,7 @@ function ZapForm() {
 					</div>
 				)}
 
-				{isNewZap && (
+				{!isLoading && isNewZap && (
 					<div className="mt-3">
 						<h4>Confirm</h4>
 						<Button
