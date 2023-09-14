@@ -1,26 +1,26 @@
 import { Link } from 'react-router-dom'
 import Image from 'react-bootstrap/Image'
-import { nip19 } from '@nostrband/nostr-tools'
 import { Clipboard } from 'react-bootstrap-icons'
-import { copy } from '../utils/helpers/general'
+import { copy, encodeNpub, formatNpub } from '../utils/helpers/general'
+
+const formatName = (e) => {
+	return (
+		e.meta?.profile?.display_name ||
+		e.meta?.profile?.name ||
+		formatNpub(e.pubkey)
+	)
+}
 
 function Profile({ event }) {
-	const formatNpub = (pubkey) => {
-		const npub = nip19.npubEncode(pubkey)
-		return npub.substring(0, 10) + '...' + npub.substring(npub.length - 4)
-	}
+	const formattedName = formatName(event)
+	const encodedNpub = encodeNpub(event.pubkey)
+	const linkPath = `nostr:${encodeNpub(event.pubkey)}`
 
-	const formatName = (e) => {
-		return (
-			e.meta?.profile?.display_name ||
-			e.meta?.profile?.name ||
-			formatNpub(e.pubkey)
-		)
-	}
+	const copyNpubHandler = () => copy(encodedNpub)
 
 	return (
 		<div className='d-flex flex-row align-items-center '>
-			<Link to={`nostr:${nip19.npubEncode(event.pubkey)}`}>
+			<Link to={linkPath}>
 				<Image
 					rounded
 					style={{ objectFit: 'cover' }}
@@ -31,11 +31,8 @@ function Profile({ event }) {
 			</Link>
 			<div className='ms-2 d-flex flex-column'>
 				<div className='fw-bold'>
-					<Link
-						to={`nostr:${nip19.npubEncode(event.pubkey)}`}
-						className='text-black'
-					>
-						{formatName(event)}
+					<Link to={linkPath} className='text-black'>
+						{formattedName}
 					</Link>
 				</div>
 				<small className='text-muted'>
@@ -44,7 +41,7 @@ function Profile({ event }) {
 						className='ms-1'
 						size={14}
 						style={{ cursor: 'pointer' }}
-						onClick={() => copy(nip19.npubEncode(event.pubkey))}
+						onClick={copyNpubHandler}
 					/>
 				</small>
 			</div>
