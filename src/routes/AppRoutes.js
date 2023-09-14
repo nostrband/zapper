@@ -3,6 +3,7 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import Root from '../pages/Main/Root'
 import About from '../pages/About/About'
 import Zapper from '../pages/Zapper/Zapper'
+import { Spinner } from 'react-bootstrap'
 
 const router = createBrowserRouter([
 	{
@@ -20,5 +21,11 @@ const router = createBrowserRouter([
 ])
 
 export const AppRoutes = () => {
-	return <RouterProvider router={router} />
+	return (
+		<React.Suspense
+			fallback={<Spinner animation='border' variant='violet' />}
+		>
+			<RouterProvider router={router} />
+		</React.Suspense>
+	)
 }

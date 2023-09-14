@@ -1,6 +1,6 @@
 import { IntlProvider as ReactIntlProvider } from 'react-intl'
 
-import enMessages from '../translations/en.json'
+import enMessages from '../../translations/en.json'
 
 //import useLogin from "Hooks/useLogin";
 

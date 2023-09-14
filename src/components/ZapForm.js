@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
-import Form from 'react-bootstrap/Form'
-import Button from 'react-bootstrap/Button'
-import Container from 'react-bootstrap/Container'
-import Row from 'react-bootstrap/Row'
-import Col from 'react-bootstrap/Col'
-import Modal from 'react-bootstrap/Modal'
-import InputGroup from 'react-bootstrap/InputGroup'
+import {
+	Container,
+	Row,
+	Col,
+	Modal,
+	Form,
+	Button,
+	InputGroup,
+} from 'react-bootstrap'
 import {
 	ArrowClockwise,
 	CaretDown,
@@ -18,7 +20,12 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { ToastContainer, toast } from 'react-toastify'
 import { nip19 } from '@nostrband/nostr-tools'
 import 'react-toastify/dist/ReactToastify.css'
-import { nostr, TYPE_ZAP, TYPE_ANON_ZAP, TYPE_SEND_SATS } from '../nostr'
+import {
+	nostr,
+	TYPE_ZAP,
+	TYPE_ANON_ZAP,
+	TYPE_SEND_SATS,
+} from '../modules/nostr'
 import Profile from './Profile'
 import ZapModal from './ZapModal'
 import { formatSats, formatAmount } from '../utils/helpers/general'

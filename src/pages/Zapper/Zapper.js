@@ -4,9 +4,9 @@ import Col from 'react-bootstrap/Col'
 
 import './Zapper.css'
 
-import Header from './components/Header'
-import Footer from './components/Footer'
-import ZapForm from './components/ZapForm'
+import Header from '../../components/Header'
+import Footer from '../../components/Footer'
+import ZapForm from '../../components/ZapForm'
 
 function Zapper() {
 	return (

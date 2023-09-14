@@ -4,8 +4,8 @@ import Col from 'react-bootstrap/Col'
 
 import './About.css'
 
-import Header from './components/Header'
-import Footer from './components/Footer'
+import Header from '../../components/Header'
+import Footer from '../../components/Footer'
 
 function About() {
 	return (

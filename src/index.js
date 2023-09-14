@@ -1,8 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import ThemeProvider from 'react-bootstrap/ThemeProvider'
-import { IntlProvider } from './modules/IntlProvider'
-import './index.css'
+import { IntlProvider } from './modules/intl/IntlProvider'
+import './assets/css/index.css'
 import reportWebVitals from './reportWebVitals'
 import { ToastContainer } from 'react-toastify'
 import { AppRoutes } from './routes/AppRoutes'
@@ -10,7 +10,7 @@ import { AppRoutes } from './routes/AppRoutes'
 const root = ReactDOM.createRoot(document.getElementById('root'))
 root.render(
 	<IntlProvider>
-		<ThemeProvider>
+		<ThemeProvider >
 			<AppRoutes />
 			<ToastContainer />
 		</ThemeProvider>
