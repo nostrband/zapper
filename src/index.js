@@ -1,36 +1,17 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import ThemeProvider from 'react-bootstrap/ThemeProvider'
 import { IntlProvider } from './modules/IntlProvider'
-
 import './index.css'
-import Root from './Root'
-import About from './About'
-import Zapper from './Zapper'
 import reportWebVitals from './reportWebVitals'
 import { ToastContainer } from 'react-toastify'
-
-export const router = createBrowserRouter([
-	{
-		path: '/',
-		element: <Root />,
-	},
-	{
-		path: '/about',
-		element: <About />,
-	},
-	{
-		path: '/zap',
-		element: <Zapper />,
-	},
-])
+import { AppRoutes } from './routes/AppRoutes'
 
 const root = ReactDOM.createRoot(document.getElementById('root'))
 root.render(
 	<IntlProvider>
 		<ThemeProvider>
-			<RouterProvider router={router} />
+			<AppRoutes />
 			<ToastContainer />
 		</ThemeProvider>
 	</IntlProvider>,
