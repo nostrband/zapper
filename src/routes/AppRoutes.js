@@ -1,9 +1,10 @@
-import React from 'react'
+import React, { lazy } from 'react'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import Root from '../pages/Main/Root'
-import About from '../pages/About/About'
-import Zapper from '../pages/Zapper/Zapper'
 import { Spinner } from 'react-bootstrap'
+
+const About = lazy(() => import('../pages/About/About'))
+const Zapper = lazy(() => import('../pages/Zapper/Zapper'))
 
 const router = createBrowserRouter([
 	{
