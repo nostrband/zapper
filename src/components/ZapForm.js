@@ -522,7 +522,7 @@ function ZapForm() {
 							<Container className="p-0">
 								<Row className='gx-1'>
 									{AMOUNTS.map(ve => (
-										<Col key={ve} md="2" xs="4" className="mb-2">
+										<Col key={ve} md="3" xs="4" className="mb-2">
 											<Button
 												variant={amount === ve[0] ? "primary" : "outline-secondary"}
 												className="w-100"
