@@ -55,7 +55,13 @@ function ZapModal({ isOpen, onClose, currentZap, zaps, onDone }) {
         {currentZap.status === 'paying' && (
           <div className="mt-2">Fetching invoice...</div>
         )}
-        {currentZap.status === 'waiting' && (
+        {currentZap.status === 'done' && (
+          <div className="mt-2">Sent!</div>
+        )}
+        {currentZap.status === 'error' && (
+          <div className="mt-2">Error: {currentZap.error+""}</div>
+        )}
+        {currentZap.invoice && (currentZap.status === 'waiting' || currentZap.status === 'error') && (
           <>
             {nostr.hasWebLN() && (
               <div className="mt-2">Please pay by invoice:</div>
@@ -108,7 +114,7 @@ function ZapModal({ isOpen, onClose, currentZap, zaps, onDone }) {
         <Button variant="outline-secondary" size="lg" className="w-100"
           onClick={onClose}
         >
-          Cancel
+          {currentZap.status === 'error' ? "Close" : currentZap.status === 'done' ? "Done" : "Cancel"}
         </Button>
       </Modal.Footer>
     </Modal>

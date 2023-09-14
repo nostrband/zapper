@@ -62,8 +62,8 @@ function enableWindowInterface(name, cb) {
 
 enableWindowInterface('nostr', () => {
   hasNip07 = true;
-  if (ndkObject)
-    ndkObject.signer = new NDKNip07Signer();
+//  if (ndkObject)
+//    ndkObject.signer = new NDKNip07Signer();
 });
 
 enableWindowInterface('webln', () => {
@@ -214,8 +214,18 @@ export async function sendZap(zap, log, updateZap) {
     if (zap.type === TYPE_ZAP || zap.type === TYPE_ANON_ZAP) {
       log("Signing...");
       if (zap.type === TYPE_ZAP) {
-        // sign our zap request
-        await zap.zap.sign();
+        if (!hasNip07 || !window.nostr)
+          throw new Error("Please use a browser extension to login");
+
+        const signed = await window.nostr.signEvent({
+          kind: zap.zap.kind,
+          created_at: zap.zap.created_at,
+          tags: zap.zap.tags,
+          content: zap.zap.content
+        });
+        zap.zap.pubkey = signed.pubkey;
+        zap.zap.id = signed.id;
+        zap.zap.sig = signed.sig;
       } else {
         const sk = generatePrivateKey();
         zap.zap.pubkey = getPublicKey(sk);;

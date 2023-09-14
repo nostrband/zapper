@@ -6,7 +6,7 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Modal from 'react-bootstrap/Modal';
 import InputGroup from 'react-bootstrap/InputGroup';
-import { ArrowClockwise, CaretDown, Check, Play, X } from 'react-bootstrap-icons';
+import { ArrowClockwise, CaretDown, Check, CheckCircle, Play, X } from 'react-bootstrap-icons';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import { nip19 } from '@nostrband/nostr-tools';
@@ -55,7 +55,7 @@ const COMMENTS = [
 	"👍 Amazing!",
 	"🚀 LFG!",
 	"⭐ Great job!",
-	"👀 Looking good!",
+	"👀 Looks good!",
 	"🙏 Thank you!",
 	"💜 Love it!",
 	"👌 Way to go!",
@@ -102,6 +102,7 @@ function ZapForm() {
 	const [showCommentPicker, setShowCommentPicker] = useState(false);
 	const [showLogs, setShowLogs] = useState(false);
 	const [showJson, setShowJson] = useState(false);
+	const [showDone, setShowDone] = useState(false);
 
 	const log = (s) => {
 		setLogs(prev => prev + "\n" + s);
@@ -124,7 +125,10 @@ function ZapForm() {
 
 		// sends if has webLN, or just fetches invoices etc
 		// if need to send manually
-		return await nostr.sendZap(zap, log, updateZap);
+		const r = await nostr.sendZap(zap, log, updateZap);
+		if (zap.status === 'done')
+			toast.success(`Sent ${formatSats(zap.amount)} sats`);
+		return r;
 	};
 
 	const restartZap = (zap) => {
@@ -141,12 +145,11 @@ function ZapForm() {
 		const zap = zaps.find(z => !z.status);
 		if (!zap) {
 			setCurrentZapIndex(-1);
+			setShowDone(zaps.length > 0);
 			return;
 		}
 
 		await sendZap(zap);
-		if (zap.status === 'done')
-			toast.success(`Sent ${formatSats(zap.amount)} sats`);
 
 		// auto-sending next one
 		if ((zap.status === 'done' || zap.status === 'error')
@@ -162,7 +165,10 @@ function ZapForm() {
 	const doneCurrentZap = () => {
 		currentZap.status = 'done';
 		updateZap(currentZap);
-		sendNextZap(); // next one
+		// only go to next one if it's our first pass
+		// and we still have non-tried receivers
+		if (zaps.find(z => !z.status))
+			sendNextZap(); // next one
 	}
 
 	const updateAutoSendTimer = (sec) => {
@@ -350,7 +356,7 @@ function ZapForm() {
 		setIsLoading(true);
 		setError("");
 
-		load().catch(console.error).finally(() => {
+		load().catch(setError).finally(() => {
 			setIsLoading(false);
 		});
 
@@ -407,7 +413,7 @@ function ZapForm() {
 						setWasAutoSend(false);
 					}
 				})
-				.catch(console.error)
+				.catch(setError)
 		}
 
 	}, [target, targetPubkeyWeights, metas, amount, type, comment]);
@@ -446,6 +452,26 @@ function ZapForm() {
 		if (error)
 			status += `, ${error} errors`;
 	}
+
+	let label =	'';
+	if (!amount) {
+		label = 'Specify amount first';
+	} else {
+		switch(type) {
+			case TYPE_ZAP: 
+			case TYPE_ANON_ZAP: 
+				label = "Zap"; 
+				break;
+			case TYPE_SEND_SATS: 
+				label = "Send"; 
+				break;
+		}
+	  label += ` ${amount} sats`;
+		if (zaps.length > 1)
+		  label += ` to ${zaps.length} recipients`;
+	}
+
+	const hasErrors = !!zaps.find(z => z.status === 'error');
 
 	return (
 		<div>
@@ -494,7 +520,7 @@ function ZapForm() {
 						<Modal.Body>
 
 							<Container className="p-0">
-								<Row>
+								<Row className='gx-1'>
 									{AMOUNTS.map(ve => (
 										<Col key={ve} md="2" xs="4" className="mb-2">
 											<Button
@@ -548,9 +574,9 @@ function ZapForm() {
 								<Modal.Body>
 
 									<Container className="p-0">
-										<Row>
+										<Row className='gx-1'>
 											{COMMENTS.map(c => (
-												<Col key={c} md="6" xs="12" className="mb-2">
+												<Col key={c} md="6" xs="6" className="mb-2">
 													<Button
 														variant={comment === c ? "primary" : "outline-secondary"}
 														className="w-100"
@@ -699,8 +725,7 @@ function ZapForm() {
 							onClick={sendNextZap}
 							disabled={!amount || !zaps.length}
 						>
-							{type === TYPE_SEND_SATS ? "Send" : "Zap"} {amount && `${amount}`} sats
-							{zaps.length > 1 && ` to ${zaps.length} recipients`}
+							{label}
 						</Button>
 					</div>
 
@@ -727,6 +752,32 @@ function ZapForm() {
 					<Modal.Footer className="d-flex flex-column">
 						<Button variant="outline-primary" size="lg" className="w-100" onClick={cancel}>
 							Cancel
+						</Button>
+					</Modal.Footer>
+				</Modal>
+
+				<Modal
+					show={showDone}
+					onHide={() => setShowDone(false)}
+					aria-labelledby="contained-modal-title-vcenter"
+					centered
+				>
+					<Modal.Body>
+						<h1>{hasErrors ? "Done with errors" : "Done!"}</h1>
+						<center className='mt-3'>
+							<CheckCircle color={hasErrors ? "yellow" : "lime"} size={96} />
+						</center>
+						{hasErrors && (
+							<p className='mt-4'>
+								You can view logs and retry with the failed recipients.
+							</p>
+						)}
+					</Modal.Body>
+					<Modal.Footer className="d-flex flex-column">
+						<Button variant="outline-secondary" size="lg" className="w-100" 
+							onClick={() => setShowDone(false)}
+						>
+							Close
 						</Button>
 					</Modal.Footer>
 				</Modal>
