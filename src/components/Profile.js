@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import Image from 'react-bootstrap/Image'
 import { Clipboard } from 'react-bootstrap-icons'
 import { copy, encodeNpub, formatNpub } from '../utils/helpers/general'
+import { useOptimizedMediaSource } from '../hooks/useOptimizedMediaSource'
 
 const formatName = (e) => {
    return (
@@ -18,6 +19,11 @@ function Profile({ event }) {
 
    const copyNpubHandler = () => copy(encodedNpub)
 
+   const profileImage = useOptimizedMediaSource({
+      pubkey: event.pubkey,
+      originalImage: event.meta?.profile?.picture,
+   })
+
    return (
       <div className="d-flex flex-row align-items-center ">
          <Link to={linkPath}>
@@ -26,7 +32,8 @@ function Profile({ event }) {
                style={{ objectFit: 'cover' }}
                width="48"
                height="48"
-               src={event.meta?.profile?.picture}
+               src={profileImage}
+               alt={formattedName}
             />
          </Link>
          <div className="ms-2 d-flex flex-column">
