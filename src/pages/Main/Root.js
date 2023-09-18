@@ -31,8 +31,8 @@ function Root() {
          </Form>
 
          <p className="mt-4">
-            To learn more about this Nostr micro-app and how to use it, check
-            out the <Link to="/about">about</Link> page.
+            To learn more about this Nostr micro-app and how to use it click{' '}
+            <Link to="/about">here</Link>.
          </p>
       </Layout>
    )
