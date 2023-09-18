@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link } from 'react-bootstrap-icons'
+import { Link } from 'react-router-dom'
 import Profile from '../../Profile'
 import { nostr } from '../../../modules/nostr'
 import { EventModal } from '../../Modal/EventModal'
@@ -40,14 +40,13 @@ export const Event = ({ target }) => {
             <small className="text-muted">
                <span>{formatDate(target.created_at)}</span>
                <Link className="ms-1 text-secondary" onClick={toggleShowJSON}>
-                  {' '}
                   view json
                </Link>
             </small>
          </div>
 
          {/* Show event on json format */}
-         <EventModal show={showJson} onHide={toggleShowJSON} />
+         <EventModal show={showJson} onHide={toggleShowJSON} target={target} />
       </div>
    )
 }

@@ -1,21 +1,15 @@
-import { useState, useEffect } from 'react'
-import { Form, Button, InputGroup } from 'react-bootstrap'
-import { CaretDown } from 'react-bootstrap-icons'
+import { useState, useEffect, useRef } from 'react'
+import { Form, Button } from 'react-bootstrap'
 import { useSearchParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { nip19 } from '@nostrband/nostr-tools'
-import {
-   nostr,
-   TYPE_ZAP,
-   TYPE_ANON_ZAP,
-   TYPE_SEND_SATS,
-} from '../../modules/nostr'
+import { nostr, TYPE_SEND_SATS } from '../../modules/nostr'
 import { Tabs } from '../Tabs/Tabs'
 import { Event } from './components/Event'
 import { Recipients } from './components/Recipients'
-import { formatSats } from '../../utils/helpers/general'
-import { TABS } from './constants'
-import { getHeadingByTab } from './helpers'
+import { Logs } from './components/Logs'
+import { ErrorBoundary } from './components/ErrorBoundary'
+import { FormInputGroup } from './components/FormInputGroup'
 import {
    AmountModal,
    AutoZapModal,
@@ -23,6 +17,13 @@ import {
    SuccessModal,
    ZapModal,
 } from '../Modal'
+import { formatSats } from '../../utils/helpers/general'
+import { TABS } from './utils/constants'
+import {
+   getHeadingByTab,
+   getStatusLabel,
+   getSubmitLabel,
+} from './utils/helpers'
 
 function ZapForm() {
    const [searchParams, setSearchParams] = useSearchParams()
@@ -52,13 +53,12 @@ function ZapForm() {
    // UI state
    const [logs, setLogs] = useState('')
    const [autoSendTimer, setAutoSendTimer] = useState(0)
-   const [timerId, setTimerId] = useState(undefined)
    const [currentZapIndex, setCurrentZapIndex] = useState(-1)
+   const timerRef = useRef()
 
    // controls
    const [showAmountPicker, setShowAmountPicker] = useState(false)
    const [showCommentPicker, setShowCommentPicker] = useState(false)
-   const [showLogs, setShowLogs] = useState(false)
    const [showDone, setShowDone] = useState(false)
 
    const log = (s) => {
@@ -127,7 +127,7 @@ function ZapForm() {
 
    const updateAutoSendTimer = (sec) => {
       setAutoSendTimer(sec)
-      const to = setTimeout(() => {
+      timerRef.current = setTimeout(() => {
          if (sec > 1) {
             updateAutoSendTimer(sec - 1)
          } else {
@@ -135,13 +135,11 @@ function ZapForm() {
             emitSend()
          }
       }, 1000)
-
-      setTimerId(to)
    }
 
    const cancel = () => {
-      if (timerId) clearTimeout(timerId)
-      setTimerId(undefined)
+      if (timerRef.current || timerRef.current === 0)
+         clearTimeout(timerRef.current)
       setAutoSendTimer(0)
    }
 
@@ -176,9 +174,8 @@ function ZapForm() {
    // load the target if id changes
    useEffect(() => {
       const load = async () => {
-         if (!id) {
-            if (!searchParams.get('id')) setError('Specify id')
-            return
+         if (!id || !searchParams.get('id')) {
+            return setError('Specify id')
          }
 
          const targets = []
@@ -220,8 +217,7 @@ function ZapForm() {
                break
 
             default:
-               setError(`Bad id ${id}`)
-               return
+               return setError(`Bad id ${id}`)
          }
          relays = relays.filter((r) => r !== '')
 
@@ -230,21 +226,22 @@ function ZapForm() {
          let targetEvent = null
          if (target !== '') {
             if (target.toLowerCase().startsWith('wss://')) {
-               setError('Nrelay not supported yet')
-               return
+               return setError('Nrelay not supported yet')
                // FIXME get relay info
             }
             if (target.includes(':')) {
                targetEvent = await nostr.fetchEventByAddr(ndk, target)
                if (!targetEvent) {
-                  setError(`Failed to fetch target event by addr ${target}`)
-                  return
+                  return setError(
+                     `Failed to fetch target event by addr ${target}`
+                  )
                }
             } else {
                targetEvent = await nostr.fetchEventById(ndk, target)
                if (!targetEvent) {
-                  setError(`Failed to fetch target event by id ${target}`)
-                  return
+                  return setError(
+                     `Failed to fetch target event by id ${target}`
+                  )
                }
             }
          }
@@ -283,8 +280,7 @@ function ZapForm() {
 
          // no targets? we're done
          if (targets.length === 0) {
-            setError('No zap target found')
-            return
+            return setError('No zap target found')
          }
 
          setTargetPubkeyWeights(targets)
@@ -304,6 +300,7 @@ function ZapForm() {
             )
 
          setTarget(targetEvent)
+         return undefined
       }
 
       setIsLoading(true)
@@ -378,61 +375,23 @@ function ZapForm() {
    useEffect(() => {
       if (wasAutoSend) {
          // make sure we drop the auto-send param and don't let it be returned to
-         const params = new URLSearchParams(searchParams.toString())
-         params.delete('auto_send')
-         setSearchParams(params, { replace: true })
+         searchParams.delete('auto_send')
+         setSearchParams(searchParams, { replace: true })
       }
    }, [wasAutoSend])
 
    if (error) {
-      return (
-         <div>
-            <h4>Error</h4>
-            <div>{error}</div>
-            <Button onClick={() => window.location.reload()}>Retry</Button>
-         </div>
-      )
+      return <ErrorBoundary error={error} />
    }
 
    const isNewZap = !zaps.find((z) => z.status)
-   let status = ''
-   if (!isNewZap) {
-      const paid = zaps.reduce((total, zap) => {
-         return total + (zap.status === 'done' ? zap.amount : 0)
-      }, 0)
-      const done = zaps.filter((z) => z.status === 'done').length
-      //		const todo = zaps.filter(z => !z.status).length;
-      const error = zaps.filter((z) => z.status === 'error').length
-      const todo = done === zaps.length ? done : `${done}/${zaps.length}`
-      status = `Sent ${formatSats(paid)} sats to ${todo} recipients`
-      if (error) status += `, ${error} errors`
-   }
-
-   let label = ''
-   if (!amount) {
-      label = 'Specify amount first'
-   } else {
-      switch (type) {
-         case TYPE_ZAP:
-         case TYPE_ANON_ZAP:
-            label = 'Zap'
-            break
-         case TYPE_SEND_SATS:
-            label = 'Send'
-            break
-         default:
-            break
-      }
-      label += ` ${amount} sats`
-      if (zaps.length > 1) label += ` to ${zaps.length} recipients`
-   }
 
    const hasErrors = !!zaps.find((z) => z.status === 'error')
 
    const showCommentField = type !== TYPE_SEND_SATS
 
    return (
-      <div>
+      <>
          <Tabs
             onTabChange={(tab) => setType(tab)}
             tabs={TABS}
@@ -441,49 +400,27 @@ function ZapForm() {
          <p>{getHeadingByTab(type)}</p>
 
          <Form>
-            <h4>Amount</h4>
-
-            <InputGroup className="mb-3">
-               <Form.Control
-                  placeholder="Enter or pick amount"
-                  aria-label="Enter or pick amount"
-                  aria-describedby="pick-amount"
-                  type="number"
-                  value={amount || ''}
-                  onChange={(e) => setAmount(Number(e.target.value))}
-               />
-               <Button
-                  variant="outline-secondary"
-                  id="pick-amount"
-                  onClick={() => setShowAmountPicker(true)}
-               >
-                  <CaretDown /> Pick
-               </Button>
-            </InputGroup>
+            <FormInputGroup
+               value={amount}
+               onChange={(e) => setAmount(Number(e.target.value))}
+               placeholder="Enter or pick amount"
+               id="pick-amount"
+               onPick={() => setShowAmountPicker(true)}
+               label="Amount"
+               type="number"
+            />
 
             {showCommentField && (
-               <>
-                  <h4>Comment</h4>
-
-                  <InputGroup className="mb-3">
-                     <Form.Control
-                        placeholder="Enter or pick comment (optional)"
-                        aria-label="Enter or pick comment (optional)"
-                        aria-describedby="pick-comment"
-                        as="textarea"
-                        rows={1}
-                        value={comment}
-                        onChange={(e) => setComment(e.target.value)}
-                     />
-                     <Button
-                        variant="outline-secondary"
-                        id="pick-comment"
-                        onClick={() => setShowCommentPicker(true)}
-                     >
-                        <CaretDown /> Pick
-                     </Button>
-                  </InputGroup>
-               </>
+               <FormInputGroup
+                  value={comment}
+                  onChange={(e) => setAmount(Number(e.target.value))}
+                  placeholder="Enter or pick comment (optional)"
+                  id="pick-comment"
+                  onPick={() => setShowCommentPicker(true)}
+                  label="Comment"
+                  as="textarea"
+                  rows={1}
+               />
             )}
          </Form>
 
@@ -506,46 +443,38 @@ function ZapForm() {
                   onClick={sendNextZap}
                   disabled={!amount || !zaps.length}
                >
-                  {label}
+                  {getSubmitLabel(amount, type, zaps.length)}
                </Button>
             </div>
          )}
 
          {!isNewZap && (
             <div className="mt-3">
-               <h4>{status}</h4>
+               <h4>{getStatusLabel(zaps)}</h4>
             </div>
          )}
 
-         <div
-            className="d-none"
-            id="send"
-            role="button"
-            onClick={sendNextZap}
-         />
+         <Logs logs={logs} />
 
+         {/* Modals */}
          <AmountModal
             show={showAmountPicker}
             onHide={() => setShowAmountPicker(false)}
             onPickAmount={(newAmount) => setAmount(newAmount)}
             pickedAmount={amount}
          />
-
          <CommentModal
             show={showCommentPicker}
             onHide={() => setShowCommentPicker(false)}
             pickedComment={comment}
             onPickComment={(newComment) => setComment(newComment)}
          />
-
          <AutoZapModal show={autoSendTimer > 0} onHide={cancel} />
-
          <SuccessModal
             show={showDone}
             onHide={() => setShowDone(false)}
             hasErrors={hasErrors}
          />
-
          {currentZap && (
             <ZapModal
                isOpen={currentZap}
@@ -555,21 +484,14 @@ function ZapForm() {
                onDone={doneCurrentZap}
             />
          )}
-         {logs && (
-            <div className="mt-3">
-               {!showLogs && (
-                  <Button
-                     size="sm"
-                     variant="outline-secondary"
-                     onClick={() => setShowLogs(true)}
-                  >
-                     View logs
-                  </Button>
-               )}
-               {showLogs && <pre>{logs}</pre>}
-            </div>
-         )}
-      </div>
+         {/* for emitSend */}
+         <div
+            className="d-none"
+            id="send"
+            role="button"
+            onClick={sendNextZap}
+         />
+      </>
    )
 }
 
