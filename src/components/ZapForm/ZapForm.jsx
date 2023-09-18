@@ -413,7 +413,7 @@ function ZapForm() {
             {showCommentField && (
                <FormInputGroup
                   value={comment}
-                  onChange={(e) => setAmount(Number(e.target.value))}
+                  onChange={(e) => setComment(e.target.value)}
                   placeholder="Enter or pick comment (optional)"
                   id="pick-comment"
                   onPick={() => setShowCommentPicker(true)}

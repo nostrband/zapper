@@ -1,5 +1,5 @@
 import { Button, Form } from 'react-bootstrap'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { Layout } from '../../layout/Layout'
 
@@ -18,7 +18,7 @@ function Root() {
 
    return (
       <Layout>
-         <p>Hello, enter event id or npub to zap it.</p>
+         <p className="mt-5">You can zap any Nostr event by id.</p>
          <Form className="d-flex gap-1" onSubmit={handleSubmit}>
             <Form.Control
                onChange={(e) => setId(e.target.value)}
@@ -26,9 +26,14 @@ function Root() {
                placeholder="Event ID or npub"
             />
             <Button variant="outline-secondary" type="submit">
-               Enter
+               Zap
             </Button>
          </Form>
+
+         <p className="mt-4">
+            To learn more about this Nostr micro-app and how to use it, check
+            out the <Link to="/about">about</Link> page.
+         </p>
       </Layout>
    )
 }

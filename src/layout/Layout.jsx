@@ -6,13 +6,13 @@ import classes from './Layout.module.css'
 
 export const Layout = ({ children }) => {
    return (
-      <Container className={`${classes.container} mt-5`}>
+      <Container className={`${classes.container} mt-3`}>
          <Row>
             <Col>
                <Header />
             </Col>
          </Row>
-         <Row className="mt-5">
+         <Row className="mt-2">
             <Col>
                <main>{children}</main>
             </Col>

@@ -7,9 +7,13 @@ const Header = () => {
       <header>
          <Row>
             <Col className="d-flex align-items-center">
-               <h4>
-                  <Link to="/">Zapper</Link>
-               </h4>
+               <Link
+                  to="/"
+                  className="link-secondary"
+                  style={{ textDecoration: 'none' }}
+               >
+                  <h4>⚡ Zapper</h4>
+               </Link>
             </Col>
          </Row>
       </header>
