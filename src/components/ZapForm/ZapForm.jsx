@@ -307,7 +307,7 @@ function ZapForm() {
       setError('')
 
       load()
-         .catch(setError)
+         .catch((error) => setError(error.message))
          .finally(() => {
             setIsLoading(false)
          })
