@@ -1,4 +1,4 @@
-import ZapForm from '../../components/ZapForm'
+import ZapForm from '../../components/ZapForm/ZapForm'
 import { Layout } from '../../layout/Layout'
 
 function Zapper() {

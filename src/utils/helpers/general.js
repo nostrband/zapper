@@ -6,7 +6,7 @@ export async function copy(v) {
       await navigator.clipboard.writeText(v)
       toast.success('Copied!')
    } catch (err) {
-      console.log('error', err)
+      console.error('error', err)
       toast.error('Failed to copy!')
    }
 }
@@ -33,4 +33,8 @@ export const formatNpub = (pubkey) => {
 
 export const encodeNpub = (pubkey) => {
    return nip19.npubEncode(pubkey)
+}
+
+export const formatDate = (seconds = 0) => {
+   return new Date(seconds * 1000).toLocaleString()
 }

@@ -11,9 +11,9 @@ import {
 import { Clipboard, QrCodeScan } from 'react-bootstrap-icons'
 import QRCode from 'qrcode'
 import { toast } from 'react-toastify'
-import { nostr } from '../modules/nostr'
-import { copy, formatSats } from '../utils/helpers/general'
-import Profile from './Profile'
+import { nostr } from '../../modules/nostr'
+import { copy, formatSats } from '../../utils/helpers/general'
+import Profile from '../Profile'
 
 const ZAP_STATUTES = {
    PAYING: 'paying',
@@ -22,7 +22,7 @@ const ZAP_STATUTES = {
    WAITING: 'waiting',
 }
 
-function ZapModal({ isOpen, onClose, currentZap, zaps, onDone }) {
+export function ZapModal({ isOpen, onClose, currentZap, zaps, onDone }) {
    const [showQR, setShowQR] = useState(false)
 
    const isLast = !zaps.find((z) => !z.status)
@@ -37,7 +37,7 @@ function ZapModal({ isOpen, onClose, currentZap, zaps, onDone }) {
       QRCode.toCanvas(canvas, currentZap.invoice, (error) => {
          if (error) {
             toast.error('Failed to create QR code')
-            console.log('qr code error', error)
+            console.error('qr code error', error)
          }
       })
    }, [showQR, currentZap])
@@ -159,5 +159,3 @@ function ZapModal({ isOpen, onClose, currentZap, zaps, onDone }) {
       </Modal>
    )
 }
-
-export default ZapModal

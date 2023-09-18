@@ -6,6 +6,7 @@ import { IntlProvider } from './modules/intl/IntlProvider'
 import './assets/css/index.css'
 import reportWebVitals from './reportWebVitals'
 import { AppRoutes } from './routes/AppRoutes'
+import 'react-toastify/dist/ReactToastify.css'
 
 const root = ReactDOM.createRoot(document.getElementById('root'))
 root.render(

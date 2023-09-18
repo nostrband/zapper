@@ -19,6 +19,10 @@ const router = createBrowserRouter([
       path: '/zap',
       element: <Zapper />,
    },
+   {
+      path: '*',
+      element: <Root />,
+   },
 ])
 
 export const AppRoutes = () => {
