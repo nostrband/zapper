@@ -27,3 +27,11 @@ export const COMMENTS = [
    '🤣 LMAOF!',
    '🤯 OMFG!',
 ]
+
+export const ZAP_STATUS = {
+   INVOICE: 'invoice',
+   PAYING: 'paying',
+   DONE: 'done',
+   ERROR: 'error',
+   WAITING: 'waiting',
+}

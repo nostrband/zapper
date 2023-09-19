@@ -14,22 +14,24 @@ import { toast } from 'react-toastify'
 import { nostr } from '../../modules/nostr'
 import { copy, formatSats } from '../../utils/helpers/general'
 import Profile from '../Profile'
-
-const ZAP_STATUTES = {
-   PAYING: 'paying',
-   DONE: 'done',
-   ERROR: 'error',
-   WAITING: 'waiting',
-}
+import { ZAP_STATUS } from '../../utils/constants/general'
 
 export function ZapModal({ isOpen, onClose, currentZap, zaps, onDone }) {
    const [showQR, setShowQR] = useState(false)
 
    const isLast = !zaps.find((z) => !z.status)
 
-   const modalTitle = `Sending ${zaps.length > 1 && currentZap.index + 1}/${
-      zaps.length
-   }...`
+   let modalTitle = 'Sending...'
+   if (zaps.length > 1)
+      modalTitle = `Sending ${currentZap.index + 1}/${zaps.length}...`
+
+   let address = ''
+   try {
+      const { lud06, lud16 } = JSON.parse(currentZap.meta.content)
+      address = lud16 || lud06
+   } catch (e) {
+      console.log('Bad meta', e)
+   }
 
    useEffect(() => {
       if (!showQR || !currentZap.invoice) return
@@ -43,26 +45,28 @@ export function ZapModal({ isOpen, onClose, currentZap, zaps, onDone }) {
    }, [showQR, currentZap])
 
    const getButtonText = useCallback(() => {
-      if (currentZap.status === ZAP_STATUTES.ERROR) {
+      if (currentZap.status === ZAP_STATUS.ERROR) {
          return 'Close'
       }
-      if (currentZap.status === ZAP_STATUTES.DONE) {
+      if (currentZap.status === ZAP_STATUS.DONE) {
          return 'Done'
       }
       return 'Cancel'
    }, [currentZap])
 
    const getZapStatusLabel = useCallback(() => {
-      if (currentZap.status === ZAP_STATUTES.PAYING) {
-         return 'Fething invoice...'
+      switch (currentZap.status) {
+         case ZAP_STATUS.INVOICE:
+            return 'Fething invoice...'
+         case ZAP_STATUS.PAYING:
+            return 'Sending sats...'
+         case ZAP_STATUS.DONE:
+            return 'Sent!'
+         case ZAP_STATUS.ERROR:
+            return `Error: ${currentZap.error}`
+         default:
+            return ''
       }
-      if (currentZap.status === ZAP_STATUTES.DONE) {
-         return 'Sent!'
-      }
-      if (currentZap.status === ZAP_STATUTES.PAYING) {
-         return `Error: ${currentZap.error}`
-      }
-      return ''
    }, [currentZap])
 
    const zapStatus = getZapStatusLabel()
@@ -70,7 +74,6 @@ export function ZapModal({ isOpen, onClose, currentZap, zaps, onDone }) {
    return (
       <Modal
          show={isOpen}
-         onHide={onClose}
          backdrop="static"
          keyboard={false}
          aria-labelledby="contained-modal-title-vcenter"
@@ -82,13 +85,23 @@ export function ZapModal({ isOpen, onClose, currentZap, zaps, onDone }) {
          <Modal.Body className="d-flex flex-column">
             <Profile event={currentZap} />
             <div className="mt-3">
-               <h5>{formatSats(currentZap.amount)} sats</h5>
+               <h5
+                  style={{
+                     overflowX: 'hidden',
+                     textOverflow: 'ellipsis',
+                     whiteSpace: 'nowrap',
+                  }}
+               >
+                  {formatSats(currentZap.amount)} sats{' '}
+                  {address && <>to {address}</>}
+               </h5>
             </div>
             {currentZap.comment && (
-               <div className="mt-2">{currentZap.comment}</div>
+               <div className="mt-1">{currentZap.comment}</div>
             )}
-            {zapStatus && <div className="mt-2">{zapStatus}</div>}
+            {zapStatus && <div className="mt-3">{zapStatus}</div>}
             {currentZap.invoice &&
+               !currentZap.cancelled &&
                (currentZap.status === 'waiting' ||
                   currentZap.status === 'error') && (
                   <>

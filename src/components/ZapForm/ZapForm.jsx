@@ -3,7 +3,7 @@ import { Form, Button } from 'react-bootstrap'
 import { useSearchParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { nip19 } from '@nostrband/nostr-tools'
-import { nostr, TYPE_SEND_SATS } from '../../modules/nostr'
+import { cancelZap, nostr, TYPE_SEND_SATS } from '../../modules/nostr'
 import { Tabs } from '../Tabs/Tabs'
 import { Event } from './components/Event'
 import { Recipients } from './components/Recipients'
@@ -24,6 +24,7 @@ import {
    getStatusLabel,
    getSubmitLabel,
 } from './utils/helpers'
+import { ZAP_STATUS } from '../../utils/constants/general'
 
 function ZapForm() {
    const [searchParams, setSearchParams] = useSearchParams()
@@ -83,17 +84,27 @@ function ZapForm() {
       // sends if has webLN, or just fetches invoices etc
       // if need to send manually
       const r = await nostr.sendZap(zap, log, updateZap)
-      if (zap.status === 'done')
+      if (zap.status === ZAP_STATUS.DONE)
          toast.success(`Sent ${formatSats(zap.amount)} sats`)
       return r
    }
 
    const restartZap = (zap) => {
-      if (zap.status === 'done') return
+      if (zap.status === ZAP_STATUS.DONE) return
 
       zap.status = ''
       updateZap(zap)
       sendZap(zap)
+   }
+
+   const restartFailedZaps = () => {
+      setZaps((prev) => {
+         return prev.map((z) => {
+            if (z.status !== ZAP_STATUS.DONE) z.status = ''
+            return z
+         })
+      })
+      sendNextZap()
    }
 
    const sendNextZap = async () => {
@@ -108,7 +119,8 @@ function ZapForm() {
 
       // auto-sending next one
       if (
-         (zap.status === 'done' || zap.status === 'error') &&
+         !zap.cancelled &&
+         (zap.status === ZAP_STATUS.DONE || zap.status === ZAP_STATUS.ERROR) &&
          nostr.hasWebLN()
       ) {
          emitSend()
@@ -117,8 +129,20 @@ function ZapForm() {
 
    const currentZap = currentZapIndex >= 0 ? zaps[currentZapIndex] : null
 
+   const cancelCurrentZap = () => {
+      if (
+         currentZap.status !== ZAP_STATUS.DONE &&
+         currentZap.status !== ZAP_STATUS.ERROR &&
+         !currentZap.cancelled
+      ) {
+         cancelZap()
+      } else {
+         setCurrentZapIndex(-1)
+      }
+   }
+
    const doneCurrentZap = () => {
-      currentZap.status = 'done'
+      currentZap.status = ZAP_STATUS.DONE
       updateZap(currentZap)
       // only go to next one if it's our first pass
       // and we still have non-tried receivers
@@ -386,7 +410,9 @@ function ZapForm() {
 
    const isNewZap = !zaps.find((z) => z.status)
 
-   const hasErrors = !!zaps.find((z) => z.status === 'error')
+   const hasErrors = !!zaps.find((z) => z.status === ZAP_STATUS.ERROR)
+
+   const allDone = !zaps.find((z) => z.status !== ZAP_STATUS.DONE)
 
    const showCommentField = type !== TYPE_SEND_SATS
 
@@ -451,6 +477,15 @@ function ZapForm() {
          {!isNewZap && (
             <div className="mt-3">
                <h4>{getStatusLabel(zaps)}</h4>
+               {!allDone && !currentZap && (
+                  <Button
+                     variant="outline-primary"
+                     size="lg"
+                     onClick={restartFailedZaps}
+                  >
+                     Retry unsent zaps
+                  </Button>
+               )}
             </div>
          )}
 
@@ -478,7 +513,7 @@ function ZapForm() {
          {currentZap && (
             <ZapModal
                isOpen={currentZap}
-               onClose={() => setCurrentZapIndex(-1)}
+               onClose={cancelCurrentZap}
                currentZap={currentZap}
                zaps={zaps}
                onDone={doneCurrentZap}

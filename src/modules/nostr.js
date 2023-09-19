@@ -6,6 +6,7 @@ import {
    getPublicKey,
 } from 'nostr-tools'
 import { bech32 } from '@scure/base'
+import { ZAP_STATUS } from '../utils/constants/general'
 
 export const TYPE_ZAP = 'zap'
 export const TYPE_ANON_ZAP = 'anon-zap'
@@ -15,6 +16,8 @@ let hasNip07 = false
 let hasWebLN = false
 
 let ndkObject = null
+
+let cancelNextZap = false
 
 const utf8Decoder = new TextDecoder('utf-8')
 
@@ -148,11 +151,13 @@ async function fetchEventByAddr(ndk, addr) {
 }
 
 async function fetchInvoice(zap) {
-   const event = encodeURI(JSON.stringify(await zap.zap.toNostrEvent()))
    let url = `${zap.callback}${zap.callback.includes('?') ? '&' : '?'}amount=${
       zap.amount
    }`
-   if (zap.type !== TYPE_SEND_SATS) url += `&nostr=${event}`
+   if (zap.type !== TYPE_SEND_SATS) {
+      const event = encodeURI(JSON.stringify(await zap.zap.toNostrEvent()))
+      url += `&nostr=${event}`
+   }
    console.log('invoice url', zap, url)
 
    const res = await fetch(url)
@@ -176,19 +181,37 @@ async function fetchInvoiceCallback(meta) {
       }
 
       const res = await fetch(lnurl)
+      console.log('res', res)
       const body = await res.json()
 
       const canNostr = body.allowsNostr && body.nostrPubkey
       return { callback: body.callback, canNostr }
    } catch (err) {
-      /*-*/
+      console.log('fetch error', err)
    }
 
    return {}
 }
 
+export function cancelZap() {
+   cancelNextZap = true
+}
+
+function maybeCancel(zap, log, updateZap) {
+   if (!cancelNextZap) return false
+   cancelNextZap = false
+   zap.status = ZAP_STATUS.ERROR
+   zap.error = 'Cancelled'
+   zap.cancelled = true
+   log('Cancelled')
+   updateZap(zap)
+   return true
+}
+
 export async function sendZap(zap, log, updateZap) {
-   zap.status = 'paying'
+   if (maybeCancel(zap, log, updateZap)) return zap
+
+   zap.status = ZAP_STATUS.INVOICE
    updateZap(zap)
 
    try {
@@ -200,6 +223,8 @@ export async function sendZap(zap, log, updateZap) {
       log('Fetching callback...')
       const { callback, canNostr } = await fetchInvoiceCallback(zap.meta)
       zap.callback = callback
+
+      if (maybeCancel(zap, log, updateZap)) return zap
       if (!callback) throw new Error('Failed to fetch invoice endpoint')
 
       if (zap.type !== TYPE_SEND_SATS && !canNostr)
@@ -233,30 +258,35 @@ export async function sendZap(zap, log, updateZap) {
          updateZap(zap)
          log('Signed')
       }
+      if (maybeCancel(zap, log, updateZap)) return zap
 
       // get invoice tied to our zap request
       log('Fetching invoice...')
       zap.invoice = await fetchInvoice(zap)
       updateZap(zap)
       log(`Invoice: ${zap.invoice}`)
+      if (maybeCancel(zap, log, updateZap)) return zap
 
       // try to pay w/ webln
       if (hasWebLN) {
+         zap.status = ZAP_STATUS.PAYING
+         updateZap(zap)
+
          log('Paying...')
          const r = await window.webln.sendPayment(zap.invoice)
          log(`Paid: ${r.preimage}`)
          console.log('zap result', r)
 
-         zap.status = 'done'
+         zap.status = ZAP_STATUS.DONE
       } else {
          // show the invoice and wait until it's paid
-         zap.status = 'waiting'
+         zap.status = ZAP_STATUS.WAITING
       }
    } catch (e) {
       console.log('Zap send failed', e)
       log(`Error: ${e}`)
       zap.error = e
-      zap.status = 'error'
+      zap.status = ZAP_STATUS.ERROR
    }
    updateZap(zap)
 
