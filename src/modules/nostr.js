@@ -320,12 +320,13 @@ function createZap(ndk, { comment, relays, msats, pubkey, target }) {
          target.kind === 3 ||
          (target.kind >= 10000 && target.kind < 20000) ||
          (target.kind >= 30000 && target.kind < 40000)
-      )
+      ) {
          zap.tags.push([
             'a',
             `${target.kind}:${target.pubkey}:${getTagValue(target, 'd')}`,
          ])
-      else zap.tags.push(['e', target.id])
+      }
+      zap.tags.push(['e', target.id])
    }
 
    return zap
