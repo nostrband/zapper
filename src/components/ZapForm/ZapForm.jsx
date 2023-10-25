@@ -204,7 +204,7 @@ function ZapForm() {
 
          const targets = []
          let target = ''
-         let relays = []
+         let relays = ['wss://nostr.mutinywallet.com']
          const { type: idType, data } = nip19.decode(id)
          switch (idType) {
             case 'npub':
@@ -219,7 +219,7 @@ function ZapForm() {
                   pubkey: data.pubkey,
                   weight: 1.0,
                })
-               relays = data.relays || []
+               relays.push(...(data.relays || []))
                break
 
             case 'note':
@@ -228,12 +228,12 @@ function ZapForm() {
 
             case 'nevent':
                target = data.id
-               relays = data.relays || []
+               relays.push(...(data.relays || []))
                break
 
             case 'naddr':
                target = `${data.kind}:${data.pubkey}:${data.identifier}`
-               relays = data.relays || []
+               relays.push(...(data.relays || []))
                break
 
             case 'nrelay':
@@ -244,7 +244,7 @@ function ZapForm() {
                return setError(`Bad id ${id}`)
          }
          relays = relays.filter((r) => r !== '')
-
+         // FIXME add current users relays!
          let ndk = await nostr.getNDK(relays)
 
          let targetEvent = null
@@ -308,7 +308,7 @@ function ZapForm() {
          }
 
          setTargetPubkeyWeights(targets)
-         setRelays(relays)
+         setRelays([...new Set(relays)])
 
          const pubkeys = targets.map((pw) => pw.pubkey)
          if (targetEvent) pubkeys.push(targetEvent.pubkey)
