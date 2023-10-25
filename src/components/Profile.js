@@ -33,7 +33,6 @@ function Profile({ event }) {
                width="48"
                height="48"
                src={profileImage}
-               alt={formattedName}
             />
          </Link>
          <div className="ms-2 d-flex flex-column">
