@@ -1,5 +1,5 @@
 import { toast } from 'react-toastify'
-import { nip19 } from '@nostrband/nostr-tools'
+import { nip19 } from 'nostr-tools'
 
 export async function copy(v) {
    try {

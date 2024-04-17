@@ -1,4 +1,4 @@
-import NDK, { NDKRelay, NDKNip07Signer, NDKEvent } from '@nostrband/ndk'
+import NDK, { NDKRelay, NDKNip07Signer, NDKEvent } from '@nostr-dev-kit/ndk'
 import {
    generatePrivateKey,
    getSignature,
