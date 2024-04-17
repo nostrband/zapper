@@ -454,12 +454,6 @@ function ZapForm() {
 
          {target && target.id && <Event target={target} />}
 
-         <Recipients
-            isNewZap={isNewZap}
-            onRestartZaps={(z) => restartZap(z)}
-            zaps={zaps}
-         />
-
          {!isLoading && isNewZap && (
             <div className="mt-3">
                <h4>Confirm</h4>
@@ -488,6 +482,12 @@ function ZapForm() {
                )}
             </div>
          )}
+
+         <Recipients
+            isNewZap={isNewZap}
+            onRestartZaps={(z) => restartZap(z)}
+            zaps={zaps}
+         />
 
          <Logs logs={logs} />
 
