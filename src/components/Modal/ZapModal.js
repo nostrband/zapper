@@ -57,7 +57,7 @@ export function ZapModal({ isOpen, onClose, currentZap, zaps, onDone }) {
    const getZapStatusLabel = useCallback(() => {
       switch (currentZap.status) {
          case ZAP_STATUS.INVOICE:
-            return 'Fething invoice...'
+            return 'Fetching invoice...'
          case ZAP_STATUS.PAYING:
             return 'Sending sats...'
          case ZAP_STATUS.DONE:
