@@ -4,7 +4,6 @@ import { useSearchParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { nip19 } from 'nostr-tools'
 import { cancelZap, nostr, TYPE_SEND_SATS } from '../../modules/nostr'
-import { Tabs } from '../Tabs/Tabs'
 import { Event } from './components/Event'
 import { Recipients } from './components/Recipients'
 import { Logs } from './components/Logs'
@@ -18,7 +17,6 @@ import {
    ZapModal,
 } from '../Modal'
 import { formatSats } from '../../utils/helpers/general'
-import { TABS } from './utils/constants'
 import {
    getHeadingByTab,
    getStatusLabel,
@@ -418,11 +416,11 @@ function ZapForm() {
 
    return (
       <>
-         <Tabs
+         {/* <Tabs
             onTabChange={(tab) => setType(tab)}
             tabs={TABS}
             activeTab={type}
-         />
+         /> */}
          <p>{getHeadingByTab(type)}</p>
 
          <Form>

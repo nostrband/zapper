@@ -30,6 +30,7 @@ export function ZapModal({ isOpen, onClose, currentZap, zaps, onDone }) {
       const { lud06, lud16 } = JSON.parse(currentZap.meta.content)
       address = lud16 || lud06
    } catch (e) {
+      // eslint-disable-next-line no-console
       console.log('Bad meta', e)
    }
 

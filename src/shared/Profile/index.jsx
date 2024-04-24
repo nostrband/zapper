@@ -1,0 +1,27 @@
+import React from 'react'
+import { useOptimizedMediaSource } from '../../hooks/useOptimizedMediaSource'
+import { getProfileName } from './helpers'
+import { Container, StyledAvatar, StyledUserName } from './styled'
+import { encodeNpub } from '../../utils/helpers/general'
+
+export const Profile = ({ profile, withUserName = true }) => {
+   const profileImage = useOptimizedMediaSource({
+      pubkey: profile.pubkey,
+      originalImage: profile.meta?.profile?.picture,
+   })
+   const userName = getProfileName(profile)
+
+   const linkPath = `nostr:${encodeNpub(profile.pubkey)}`
+
+   return (
+      <Container component="a" href={linkPath} target="_blank">
+         <StyledAvatar
+            variant="rounded"
+            src={profileImage}
+            alt={userName}
+            title={userName}
+         />
+         {withUserName && <StyledUserName>{userName}</StyledUserName>}
+      </Container>
+   )
+}

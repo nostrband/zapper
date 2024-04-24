@@ -14,11 +14,3 @@ export const TABS = [
       value: TYPE_SEND_SATS,
    },
 ]
-
-export const QUERY_PARAM_KEYS = {
-   ID: 'id',
-   TYPE: 'type',
-   COMMENT: 'comment',
-   AUTO_SEND: 'auto_send',
-   AMOUNT: 'amount',
-}

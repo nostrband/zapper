@@ -1,20 +1,23 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import ThemeProvider from 'react-bootstrap/ThemeProvider'
-import { ToastContainer } from 'react-toastify'
+import { Toaster } from 'react-hot-toast'
 import { IntlProvider } from './modules/intl/IntlProvider'
-import './assets/css/index.css'
 import reportWebVitals from './reportWebVitals'
 import { AppRoutes } from './routes/AppRoutes'
-import 'react-toastify/dist/ReactToastify.css'
+import ColorModeContextProvider from './store/ColorMode.Context'
+import './assets/css/index.css'
+import ThemeProvider from './modules/theme/ThemeProvider'
 
 const root = ReactDOM.createRoot(document.getElementById('root'))
+
 root.render(
    <IntlProvider>
-      <ThemeProvider>
-         <AppRoutes />
-         <ToastContainer />
-      </ThemeProvider>
+      <ColorModeContextProvider>
+         <ThemeProvider>
+            <AppRoutes />
+            <Toaster />
+         </ThemeProvider>
+      </ColorModeContextProvider>
    </IntlProvider>
 )
 

@@ -76,8 +76,8 @@ async function getNDK(relays) {
    if (!ndkObject) {
       relays = [...new Set([...relays, 'wss://relay.nostr.band/all'])]
 
-//      const nip07signer = hasNip07 ? new NDKNip07Signer() : null
-      ndkObject = new NDK()//{ signer: nip07signer })
+      //      const nip07signer = hasNip07 ? new NDKNip07Signer() : null
+      ndkObject = new NDK() //{ signer: nip07signer })
    }
 
    const rs = []
