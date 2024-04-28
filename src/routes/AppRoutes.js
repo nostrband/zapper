@@ -1,6 +1,6 @@
 import React, { lazy } from 'react'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
-import { Spinner } from 'react-bootstrap'
+import { CircularProgress, Stack } from '@mui/material'
 import Root from '../pages/Main/Root'
 import { Layout } from '../layout'
 
@@ -13,7 +13,7 @@ const router = createBrowserRouter([
       children: [
          {
             path: '/',
-            element: <Zapper />,
+            element: <Root />,
          },
          {
             path: '/about',
@@ -34,7 +34,16 @@ const router = createBrowserRouter([
 export const AppRoutes = () => {
    return (
       <React.Suspense
-         fallback={<Spinner animation="border" variant="violet" />}
+         fallback={
+            <Stack
+               alignItems="center"
+               justifyContent="center"
+               width="100%"
+               height="100%"
+            >
+               <CircularProgress color="primary" />
+            </Stack>
+         }
       >
          <RouterProvider router={router} />
       </React.Suspense>

@@ -4,13 +4,16 @@ export const StyledFooter = styled('footer')(({ theme }) => ({
    borderTop: `1px solid ${theme.palette.text.primary}1A`,
    width: '100%',
    paddingTop: '1rem',
-   paddingBottom: '5rem',
+   paddingBottom: '3rem',
+   '@media screen and (max-width: 485px)': {
+      paddingBottom: '1rem',
+   },
 }))
 
 export const InnerContainer = styled((props) => (
    <Stack {...props} direction="row" />
 ))({
-   alignItems: 'center',
+   alignItems: 'flex-start',
    justifyContent: 'space-between',
    width: '100%',
    gap: '1rem',

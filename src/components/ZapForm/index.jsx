@@ -1,36 +1,143 @@
-import React from 'react'
-import { Box, Stack } from '@mui/material'
-import { useFormContext } from 'react-hook-form'
+import React, { useState } from 'react'
+import { Box, Stack, Typography } from '@mui/material'
+import { Controller, useFormContext } from 'react-hook-form'
 import { LogoWrapper, StyledForm, StyledTitle, SubmitButton } from './styled'
 import { AppLogoIcon } from '../../assets/icons'
 import { Tabs } from './components/Tabs'
 import { AmountField } from './components/AmountField'
 import { CommentField } from './components/CommentField'
-import { getSubmitLabel } from './utils/helpers'
+import {
+   getNumericValue,
+   getStatusLabel,
+   getSubmitLabel,
+} from './utils/helpers'
+import { formatCurrency } from '../../utils/helpers/general'
+import { ModalPickComment } from '../Modal/ModalPickComment'
+import { ModalPickAmount } from '../Modal/ModalPickAmount'
+import { ZAP_STATUS } from '../../utils/constants/general'
+import { TYPE_SEND_SATS } from '../../modules/nostr'
 
-export const ZapForm = ({ onTypeChange, type, onSubmit, zapsLength = 0 }) => {
-   const { register, handleSubmit, watch } = useFormContext()
+export const ZapForm = ({
+   onTypeChange,
+   type,
+   onSubmit,
+   zaps,
+   currentZap,
+   onRetrySend,
+}) => {
+   const { register, handleSubmit, watch, control, setValue } = useFormContext()
 
-   const amount = watch('amount') || 0
+   const zapsLength = zaps.length
+
+   // controls
+   const [showAmountPicker, setShowAmountPicker] = useState(false)
+   const [showCommentPicker, setShowCommentPicker] = useState(false)
+
+   const amount = watch('amount')
+   const comment = watch('comment')
+
    const submitText = getSubmitLabel(amount, type, zapsLength)
 
+   const handleAmountChange = (value, onChange) => {
+      const lastDigit = value[value.length - 1]
+      if (lastDigit === undefined) return onChange('')
+
+      const isNumeric = /^\d*$/.test(lastDigit)
+      if (!isNumeric) return undefined
+
+      return onChange(getNumericValue(value))
+   }
+
+   const handleKeyDown = (event) => {
+      const value = getNumericValue(amount)
+      if (event.key === 'ArrowUp') {
+         setValue('amount', value + 1)
+      } else if (event.key === 'ArrowDown') {
+         setValue('amount', value <= 0 ? 0 : value - 1)
+      }
+   }
+
+   const showCommentField = type !== TYPE_SEND_SATS
+   const allDone = !zaps.find((z) => z.status !== ZAP_STATUS.DONE)
+   const isNewZap = !zaps.find((z) => z.status)
+
    return (
-      <Stack gap="1.5rem">
-         <Box paddingTop="0.5rem">
-            <LogoWrapper>
-               <AppLogoIcon />
-            </LogoWrapper>
-         </Box>
-         <StyledTitle>Send a payment</StyledTitle>
+      <>
+         <Stack gap="1.5rem">
+            <Box paddingTop="0.5rem">
+               <LogoWrapper>
+                  <AppLogoIcon />
+               </LogoWrapper>
+            </Box>
+            <StyledTitle>Send a payment</StyledTitle>
 
-         <StyledForm onSubmit={handleSubmit(onSubmit)}>
-            <Tabs value={type} onChange={onTypeChange} />
+            <StyledForm onSubmit={handleSubmit(onSubmit)}>
+               <Tabs value={type} onChange={onTypeChange} />
 
-            <AmountField {...register('amount')} placeholder="0" />
-            <CommentField {...register('comment')} placeholder="Comment" />
+               <Controller
+                  name="amount"
+                  control={control}
+                  render={({ field }) => {
+                     const value = formatCurrency(field.value)
+                     return (
+                        <AmountField
+                           {...field}
+                           value={value}
+                           onChange={(e) =>
+                              handleAmountChange(e.target.value, field.onChange)
+                           }
+                           onKeyDown={handleKeyDown}
+                           placeholder="0"
+                           autoComplete="off"
+                           onIconClick={() => setShowAmountPicker(true)}
+                        />
+                     )
+                  }}
+               />
+               {showCommentField && (
+                  <CommentField
+                     onIconClick={() => setShowCommentPicker(true)}
+                     {...register('comment')}
+                     placeholder="Comment"
+                  />
+               )}
+               {isNewZap && (
+                  <SubmitButton type="submit" disabled={!amount || !zapsLength}>
+                     {submitText}
+                  </SubmitButton>
+               )}
+               {!isNewZap && (
+                  <Stack gap="0.5rem">
+                     <Typography
+                        textAlign="center"
+                        variant="subtitle2"
+                        fontWeight={600}
+                     >
+                        {getStatusLabel(zaps)}
+                     </Typography>
+                     {!allDone && !currentZap && (
+                        <SubmitButton type="button" onClick={onRetrySend}>
+                           Retry unsent zaps
+                        </SubmitButton>
+                     )}
+                  </Stack>
+               )}
+            </StyledForm>
+         </Stack>
 
-            <SubmitButton type="submit">{submitText}</SubmitButton>
-         </StyledForm>
-      </Stack>
+         {/* Modals */}
+         <ModalPickComment
+            open={showCommentPicker}
+            onClose={() => setShowCommentPicker(false)}
+            pickedComment={comment}
+            onPickComment={(newComment) => setValue('comment', newComment)}
+         />
+         <ModalPickAmount
+            open={showAmountPicker}
+            onClose={() => setShowAmountPicker(false)}
+            pickedAmount={amount}
+            onPickAmount={(newAmount) => setValue('amount', newAmount)}
+         />
+      </>
    )
 }

@@ -1,6 +1,5 @@
-/* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from 'react'
-import { CircularProgress, IconButton, Stack } from '@mui/material'
+import { Box, CircularProgress, IconButton, Stack } from '@mui/material'
 import { FormProvider, useForm } from 'react-hook-form'
 import { useSearchParams } from 'react-router-dom'
 import { InfoButtonContainer, Container, StyledHint } from './styled'
@@ -11,23 +10,39 @@ import { EventDetails } from './components/EventDetails'
 import { useLoadZaps } from './hooks/useLoadZaps'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { Recipients } from './components/Recipients'
+import { ModalZap } from '../../components/Modal/ModalZap'
+import { ZAP_STATUS } from '../../utils/constants/general'
+import { Logs } from './components/Logs'
+import { ModalAutoZap } from '../../components/Modal/ModalAutoZap'
+import { ModalSuccess } from '../../components/Modal/ModalSuccess'
 
 const Zapper = () => {
-   const [searchParams] = useSearchParams()
    const methods = useForm()
-   const [type, setType] = useState('zap') // zap type
+   const [searchParams] = useSearchParams()
 
-   // params
-   const [id, setId] = useState('')
-   const [wasAutoSend, setWasAutoSend] = useState(false)
+   const [type, setType] = useState('zap')
+   const enteredAmount = Number(methods.watch('amount')) || 0
+   const enteredComment = methods.watch('comment')
 
-   const { isLoading, error, zaps, target } = useLoadZaps(id)
+   const {
+      isLoading,
+      error,
+      zaps,
+      target,
+      sendNextZap,
+      cancelCurrentZap,
+      doneCurrentZap,
+      currentZap,
+      logs,
+      autoSendTimer,
+      cancelAutoSend,
+      showDone,
+      handleHideSuccessModal,
+      restartFailedZaps,
+      restartZap,
+   } = useLoadZaps(type, enteredAmount, enteredComment)
 
-   // read params from query string
    useEffect(() => {
-      const id = searchParams.get('id')
-      setId(id)
-
       const zapType = searchParams.get('type') || 'zap'
       setType(zapType)
 
@@ -36,9 +51,6 @@ const Zapper = () => {
 
       const comment = searchParams.get('comment') || ''
       methods.setValue('comment', comment)
-
-      const autoSend = searchParams.get('auto_send') === 'true'
-      if (autoSend) setWasAutoSend(true)
    }, [searchParams])
 
    if (error) {
@@ -50,44 +62,85 @@ const Zapper = () => {
    const hint = getHeadingByTab(type)
 
    const handleSubmit = (values) => {
-      // eslint-disable-next-line
-      console.log(values)
+      if (!values.amount || !zaps.length) return
+      sendNextZap()
    }
 
+   const hasErrors = !!zaps.find((z) => z.status === ZAP_STATUS.ERROR)
+   const isNewZap = !zaps.find((z) => z.status)
+
    return (
-      <Container>
-         <InfoButtonContainer>
-            <IconButton className="info_btn">
-               <InfoIcon />
-            </IconButton>
-         </InfoButtonContainer>
+      <Box paddingBottom="1.5rem">
+         <Container>
+            <InfoButtonContainer>
+               <IconButton className="info_btn">
+                  <InfoIcon />
+               </IconButton>
+            </InfoButtonContainer>
 
-         {isLoading && (
-            <Stack alignItems="center" justifyContent="center" height="100%">
-               <CircularProgress />
-            </Stack>
-         )}
-
-         {!isLoading && (
-            <>
-               <Stack gap="0.75rem">
-                  <FormProvider {...methods}>
-                     <ZapForm
-                        type={type}
-                        onTypeChange={handleTabChange}
-                        zapsLength={zaps.length}
-                        onSubmit={handleSubmit}
-                     />
-                  </FormProvider>
-                  <StyledHint>{hint}</StyledHint>
+            {isLoading && (
+               <Stack alignItems="center" justifyContent="center" height="100%">
+                  <CircularProgress />
                </Stack>
+            )}
 
-               <EventDetails target={target} />
+            {!isLoading && (
+               <>
+                  <Stack gap="0.75rem">
+                     <FormProvider {...methods}>
+                        <ZapForm
+                           type={type}
+                           onTypeChange={handleTabChange}
+                           onSubmit={handleSubmit}
+                           zaps={zaps}
+                           currentZap={currentZap}
+                           onRetrySend={restartFailedZaps}
+                        />
+                     </FormProvider>
 
-               <Recipients recipients={zaps} />
-            </>
-         )}
-      </Container>
+                     <StyledHint>{hint}</StyledHint>
+                  </Stack>
+
+                  <EventDetails target={target} />
+
+                  <Recipients
+                     recipients={zaps}
+                     isNewZap={isNewZap}
+                     onRestartZap={restartZap}
+                  />
+
+                  <Logs logs={logs} />
+               </>
+            )}
+            {/* for emitSend */}
+            <div
+               id="send"
+               role="button"
+               onClick={sendNextZap}
+               style={{ display: 'none' }}
+            />
+
+            {currentZap && (
+               <ModalZap
+                  open={Boolean(currentZap)}
+                  currentZap={currentZap}
+                  onClose={cancelCurrentZap}
+                  onDone={doneCurrentZap}
+                  zaps={zaps}
+               />
+            )}
+            <ModalAutoZap
+               seconds={autoSendTimer}
+               onClose={cancelAutoSend}
+               open={autoSendTimer > 0}
+            />
+            <ModalSuccess
+               open={showDone}
+               onClose={handleHideSuccessModal}
+               hasErrors={hasErrors}
+            />
+         </Container>
+      </Box>
    )
 }
 

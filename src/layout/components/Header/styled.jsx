@@ -1,7 +1,7 @@
 import { IconButton, Stack, styled } from '@mui/material'
 
 export const StyledHeader = styled('header')(({ theme }) => ({
-   padding: '1rem',
+   padding: '1rem 0',
    width: '100%',
    display: 'flex',
    justifyContent: 'center',

@@ -1,5 +1,5 @@
 import { IconButton, ListItem, Typography, styled } from '@mui/material'
-import ContentCopyIcon from '@mui/icons-material/ContentCopyOutlined'
+import { CopyIcon } from '../../../../../assets/icons'
 
 export const StyledListItem = styled(ListItem)(({ theme }) => ({
    display: 'flex',
@@ -7,7 +7,7 @@ export const StyledListItem = styled(ListItem)(({ theme }) => ({
    alignItems: 'center',
    borderBottom: `1px solid ${theme.palette.text.primary}21`,
    padding: '0.5rem 0',
-   '&:not(:hover) .copy_btn': {
+   '&.toggle:not(:hover) .copy_btn': {
       display: 'none',
    },
 }))
@@ -20,13 +20,10 @@ export const StyledSatsView = styled(Typography)(({ theme }) => ({
 
 export const CopyButton = styled((props) => (
    <IconButton {...props} classes={{ root: 'copy_btn' }}>
-      <ContentCopyIcon className="icon" />
+      <CopyIcon />
    </IconButton>
 ))(({ theme }) => ({
    '&.copy_btn': {
       color: theme.palette.text.secondary,
-   },
-   '&.copy_btn .icon': {
-      fontSize: '1.25rem',
    },
 }))

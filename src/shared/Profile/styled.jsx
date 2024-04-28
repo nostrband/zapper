@@ -19,7 +19,23 @@ export const StyledUserName = styled((props) => <Typography {...props} />)(
    })
 )
 
-export const StyledAvatar = styled((props) => <Avatar {...props} />)(() => ({
-   width: 48,
-   height: 48,
-}))
+export const StyledAvatar = styled((props) => {
+   const exclude = new Set(['withBorder'])
+   const omitProps = Object.fromEntries(
+      Object.entries(props).filter((e) => !exclude.has(e[0]))
+   )
+   return <Avatar {...omitProps} />
+})(({ withBorder = false, theme, variant }) => {
+   const commonStyles = {
+      width: 48,
+      height: 48,
+      border: withBorder ? `2px solid ${theme.palette.text.primary}` : 'none',
+   }
+   if (variant === 'rounded') {
+      return {
+         ...commonStyles,
+         borderRadius: '12px',
+      }
+   }
+   return commonStyles
+})

@@ -22,7 +22,10 @@ export const LogoWrapper = styled('div')(({ theme }) => ({
 }))
 
 export const AppTitle = styled(Typography)(({ theme }) => ({
-   fontSize: '21px',
+   fontSize: '1.3125rem',
    fontWeight: 600,
    color: theme.palette.text.primary,
+   '@media screen and (max-width: 485px)': {
+      fontSize: '1.125rem',
+   },
 }))

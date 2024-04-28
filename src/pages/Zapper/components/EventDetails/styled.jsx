@@ -2,13 +2,18 @@ import { Button, Typography, styled } from '@mui/material'
 import { ArrowDownIcon } from '../../../../assets/icons'
 
 export const StyledExpandButton = styled((props) => (
-   <Button {...props} endIcon={<ArrowDownIcon />} />
+   <Button variant="text" {...props} endIcon={<ArrowDownIcon />} />
 ))(({ theme }) => ({
    color: `${theme.palette.text.primary}B3`,
    fontSize: '0.75rem',
    padding: '0 0.25rem',
+   boxShadow: 'none',
    '& .MuiButton-endIcon': {
       marginRight: 0,
+   },
+   '&:hover': {
+      background: 'transparent',
+      boxShadow: 'none',
    },
 }))
 

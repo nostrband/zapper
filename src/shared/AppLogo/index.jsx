@@ -10,7 +10,7 @@ export const AppLogo = () => {
             <AppLogoIcon />
          </LogoWrapper>
 
-         <AppTitle>Zapper</AppTitle>
+         <AppTitle id="app_title">Zapper</AppTitle>
       </Container>
    )
 }

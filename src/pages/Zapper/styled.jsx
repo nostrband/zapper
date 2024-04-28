@@ -14,6 +14,15 @@ export const Container = styled(Box)(({ theme }) => ({
    maxWidth: '640px',
    margin: '0 auto',
    minHeight: '100%',
+   border: '1px solid',
+   borderImageSlice: 1,
+   borderImageSource:
+      theme.palette.mode === 'dark'
+         ? 'linear-gradient(180deg, rgba(255, 255, 255, 0.0169) 49.5%, rgba(255, 255, 255, 0.13) 100%)'
+         : 'linear-gradient(180deg, rgba(100, 116, 139, 0.0091) 49.5%, rgba(100, 116, 139, 0.13) 100%)',
+   '@media screen and (max-width: 485px)': {
+      padding: '1rem',
+   },
 }))
 
 export const InfoButtonContainer = styled(Stack)({

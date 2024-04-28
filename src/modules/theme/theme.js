@@ -7,9 +7,32 @@ const commonTheme = createTheme({
    components: {
       MuiButton: {
          styleOverrides: {
-            root: {
-               textTransform: 'initial',
+            root: ({ theme, color }) => {
+               const commonStyles = {
+                  textTransform: 'initial',
+                  fontWeight: 600,
+                  paddingTop: '0.875rem',
+                  paddingBottom: '0.875rem',
+                  borderRadius: '12px',
+                  boxShadow: `0px 3px 2px 0px #ffffff1A inset`,
+                  '&:hover': {
+                     boxShadow: `0px 6px 4px 0px #ffffff1A inset`,
+                  },
+               }
+
+               if (color === 'secondary') {
+                  return {
+                     ...commonStyles,
+                     borderWidth: '1px',
+                     borderStyle: 'solid',
+                     borderColor: ` ${theme.palette.text.primary}12`,
+                  }
+               }
+               return commonStyles
             },
+         },
+         defaultProps: {
+            variant: 'contained',
          },
       },
    },
@@ -27,7 +50,13 @@ const lightTheme = createTheme({
          default: '#ffffff',
       },
       primary: {
-         main: '#3462E5',
+         main: '#2563EB',
+         dark: '#1E40AF',
+      },
+      secondary: {
+         main: '#33415521',
+         dark: '#33415554',
+         contrastText: '#334155',
       },
    },
 })
@@ -44,7 +73,13 @@ const darkTheme = createTheme({
          default: '#020617',
       },
       primary: {
-         main: '#3462E5',
+         main: '#2563EB',
+         dark: '#1E40AF',
+      },
+      secondary: {
+         main: '#FFFFFF21',
+         dark: '#FFFFFF54',
+         contrastText: '#ffffff',
       },
    },
 })

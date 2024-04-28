@@ -12,7 +12,7 @@ export const EventDetails = ({ target }) => {
       setExpanded((prevExpanded) => !prevExpanded)
 
    return (
-      <>
+      <Stack gap="1rem">
          <Stack alignItems="center">
             <StyledExpandButton onClick={handleExpandDetails}>
                Event details
@@ -49,6 +49,6 @@ export const EventDetails = ({ target }) => {
                </StyledPre>
             </Stack>
          </Fade>
-      </>
+      </Stack>
    )
 }

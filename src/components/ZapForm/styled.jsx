@@ -7,6 +7,9 @@ export const StyledTitle = styled((props) => (
    fontWeight: 600,
    lineHeight: '38.72px',
    textAlign: 'center',
+   '@media screen and (max-width: 485px)': {
+      fontSize: '1.75rem',
+   },
 })
 
 export const LogoWrapper = styled('div')(({ theme }) => ({

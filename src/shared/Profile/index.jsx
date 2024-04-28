@@ -4,7 +4,11 @@ import { getProfileName } from './helpers'
 import { Container, StyledAvatar, StyledUserName } from './styled'
 import { encodeNpub } from '../../utils/helpers/general'
 
-export const Profile = ({ profile, withUserName = true }) => {
+export const Profile = ({
+   profile,
+   withUserName = true,
+   withBorder = false,
+}) => {
    const profileImage = useOptimizedMediaSource({
       pubkey: profile.pubkey,
       originalImage: profile.meta?.profile?.picture,
@@ -20,6 +24,7 @@ export const Profile = ({ profile, withUserName = true }) => {
             src={profileImage}
             alt={userName}
             title={userName}
+            withBorder={withBorder}
          />
          {withUserName && <StyledUserName>{userName}</StyledUserName>}
       </Container>
