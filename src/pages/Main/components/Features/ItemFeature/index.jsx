@@ -15,7 +15,6 @@ export const ItemFeature = ({ description, title, background, icon, id }) => {
          })
       }
       if (id === 'zap') {
-         console.log('scroll to zap')
          return scroller.scrollTo('zap', {
             duration: 100,
             smooth: true,

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Box, CircularProgress, IconButton, Stack } from '@mui/material'
 import { FormProvider, useForm } from 'react-hook-form'
 import { useSearchParams } from 'react-router-dom'
+import { useDebounce } from '@uidotdev/usehooks'
 import { InfoButtonContainer, Container } from './styled'
 import { InfoIcon } from '../../assets/icons'
 import { ZapForm } from '../../components/ZapForm'
@@ -21,7 +22,9 @@ const Zapper = () => {
 
    const [type, setType] = useState('zap')
    const enteredAmount = Number(methods.watch('amount')) || 0
+   const debouncedAmount = useDebounce(enteredAmount, 400)
    const enteredComment = methods.watch('comment')
+   const debouncedComment = useDebounce(enteredComment, 200)
 
    const {
       isLoading,
@@ -40,7 +43,7 @@ const Zapper = () => {
       handleHideSuccessModal,
       restartFailedZaps,
       restartZap,
-   } = useLoadZaps(type, enteredAmount, enteredComment)
+   } = useLoadZaps(type, debouncedAmount, debouncedComment)
 
    useEffect(() => {
       const zapType = searchParams.get('type') || 'zap'

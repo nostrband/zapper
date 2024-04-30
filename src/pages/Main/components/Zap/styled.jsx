@@ -1,4 +1,4 @@
-import { Box, Button, styled } from '@mui/material'
+import { Box, Button, Stack, styled } from '@mui/material'
 import { EyeIcon, ZapperBackground } from '../../../../assets/icons'
 
 export const Container = styled(Box)(({ theme }) => ({
@@ -11,7 +11,7 @@ export const Container = styled(Box)(({ theme }) => ({
    flexDirection: 'column',
    alignItems: 'center',
    justifyContent: 'center',
-   gap: '0.5rem',
+   gap: '1rem',
    backgroundImage: `url(${ZapperBackground})`,
    backgroundRepeat: 'no-repeat',
    backgroundPosition: 'bottom',
@@ -22,7 +22,7 @@ export const Container = styled(Box)(({ theme }) => ({
 }))
 
 export const StyledPreviewButton = styled((props) => (
-   <Button {...props} startIcon={<EyeIcon />} variant="text">
+   <Button {...props} startIcon={<EyeIcon />} variant="text" disableRipple>
       Preview
    </Button>
 ))(({ theme }) => ({
@@ -38,5 +38,21 @@ export const StyledPreviewButton = styled((props) => (
    },
    '&:is(&, :hover)': {
       boxShadow: 'none',
+      background: 'transparent',
+   },
+}))
+
+export const StyledImageWrapper = styled(Stack)(() => ({
+   alignItems: 'center',
+   height: '400px',
+   width: '100%',
+   '@media screen and (max-width: 485px)': {
+      height: '270px',
+   },
+   '& > img': {
+      objectFit: 'contain',
+      borderRadius: '10px',
+      width: '100%',
+      height: '100%',
    },
 }))

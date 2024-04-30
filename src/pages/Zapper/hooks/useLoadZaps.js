@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { getZaps, loadTargetData } from '../utils/data'
@@ -216,17 +216,19 @@ export const useLoadZaps = (type = 'zap', amount = 0, comment = '') => {
       setShowDone(false)
    }
 
-   const restartZap = (zap) => {
+   const restartZap = useCallback((zap) => {
       if (zap.status === ZAP_STATUS.DONE) return
       zap.status = ''
       updateZap(zap)
       sendZap(zap)
-   }
+   }, [])
+
+   const memoizedZaps = useMemo(() => zaps, [zaps])
 
    return {
       isLoading,
       error,
-      zaps,
+      zaps: memoizedZaps,
       target,
       sendNextZap,
       doneCurrentZap,

@@ -1,16 +1,14 @@
 import React from 'react'
-import { FormProvider, useForm } from 'react-hook-form'
-import { ZapForm } from '../../../../components/ZapForm'
-import { Container, StyledPreviewButton } from './styled'
+import { Container, StyledImageWrapper, StyledPreviewButton } from './styled'
+import { ZapperImage } from '../../../../assets/images'
 
 export const Zap = () => {
-   const methods = useForm()
    return (
       <Container>
          <StyledPreviewButton />
-         <FormProvider {...methods}>
-            <ZapForm zaps={[]} />
-         </FormProvider>
+         <StyledImageWrapper>
+            <img src={ZapperImage} alt="Zapper" />
+         </StyledImageWrapper>
       </Container>
    )
 }
