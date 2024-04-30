@@ -40,7 +40,7 @@ export const StyledAvatarGroup = styled((props) => (
       marginLeft: '-16px',
       width: 48,
       height: 48,
-      border: `1px solid ${theme.palette.text.primary}`,
+      border: `1px solid ${theme.palette.text.secondary}`,
       '@media screen and (max-width: 485px)': {
          width: 40,
          height: 40,
