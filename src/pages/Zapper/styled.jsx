@@ -1,4 +1,4 @@
-import { Box, Stack, Typography, styled } from '@mui/material'
+import { Box, Stack, styled } from '@mui/material'
 
 export const Container = styled(Box)(({ theme }) => ({
    display: 'flex',
@@ -34,10 +34,3 @@ export const InfoButtonContainer = styled(Stack)({
       zIndex: 1,
    },
 })
-
-export const StyledHint = styled((props) => (
-   <Typography {...props} variant="caption" />
-))(({ theme }) => ({
-   textAlign: 'center',
-   color: `${theme.palette.text.primary}B3`,
-}))

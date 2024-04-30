@@ -1,7 +1,13 @@
 import React, { useState } from 'react'
 import { Box, Stack, Typography } from '@mui/material'
 import { Controller, useFormContext } from 'react-hook-form'
-import { LogoWrapper, StyledForm, StyledTitle, SubmitButton } from './styled'
+import {
+   LogoWrapper,
+   StyledForm,
+   StyledHint,
+   StyledTitle,
+   SubmitButton,
+} from './styled'
 import { AppLogoIcon } from '../../assets/icons'
 import { Tabs } from './components/Tabs'
 import { AmountField } from './components/AmountField'
@@ -16,6 +22,7 @@ import { ModalPickComment } from '../Modal/ModalPickComment'
 import { ModalPickAmount } from '../Modal/ModalPickAmount'
 import { ZAP_STATUS } from '../../utils/constants/general'
 import { TYPE_SEND_SATS } from '../../modules/nostr'
+import { getHeadingByTab } from '../../pages/Zapper/utils/helpers'
 
 export const ZapForm = ({
    onTypeChange,
@@ -60,6 +67,7 @@ export const ZapForm = ({
    const showCommentField = type !== TYPE_SEND_SATS
    const allDone = !zaps.find((z) => z.status !== ZAP_STATUS.DONE)
    const isNewZap = !zaps.find((z) => z.status)
+   const hint = getHeadingByTab(type)
 
    return (
       <>
@@ -102,15 +110,21 @@ export const ZapForm = ({
                   />
                )}
                {isNewZap && (
-                  <SubmitButton type="submit" disabled={!amount || !zapsLength}>
-                     {submitText}
-                  </SubmitButton>
+                  <>
+                     <SubmitButton
+                        type="submit"
+                        disabled={!amount || !zapsLength}
+                     >
+                        {submitText}
+                     </SubmitButton>
+                     <StyledHint>{hint}</StyledHint>
+                  </>
                )}
                {!isNewZap && (
                   <Stack gap="0.5rem">
                      <Typography
                         textAlign="center"
-                        variant="subtitle2"
+                        variant="h5"
                         fontWeight={600}
                      >
                         {getStatusLabel(zaps)}

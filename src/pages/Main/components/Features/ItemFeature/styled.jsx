@@ -10,6 +10,7 @@ export const Container = styled(Box)(({ theme }) => ({
    width: '100%',
    display: 'flex',
    flexDirection: 'column',
+   cursor: 'pointer',
    gap: '1rem',
    '@media screen and (max-width: 485px)': {
       padding: '1rem',

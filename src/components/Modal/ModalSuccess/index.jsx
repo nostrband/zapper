@@ -9,14 +9,17 @@ export const ModalSuccess = ({ open, onClose, hasErrors = false }) => {
          open={open}
          onClose={onClose}
          onClickCloseIcon={onClose}
-         title="Event json"
+         title="Zap finished"
       >
          <Stack gap="1rem">
             <Typography variant="h1" fontSize="1.5rem" textAlign="center">
                {hasErrors ? 'Done with errors' : 'Done!'}
             </Typography>
             <Stack alignItems="center">
-               <CheckCircleIcon color="success" fontSize="large" />
+               <CheckCircleIcon
+                  color={hasErrors ? 'warning' : 'success'}
+                  fontSize="large"
+               />
             </Stack>
             {hasErrors && (
                <Typography variant="subtitle1" textAlign="center">

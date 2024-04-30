@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { memo, useCallback, useMemo } from 'react'
 import { IconButton, Stack, Typography } from '@mui/material'
 import { useCopyToClipboard } from '@uidotdev/usehooks'
 import toast from 'react-hot-toast'
@@ -27,33 +27,49 @@ const renderZapStatus = (status, isNewZap) => {
    }
 }
 
+const Copy = memo(function Copy({ handleCopy }) {
+   return <CopyButton onClick={handleCopy} />
+})
+
+const Weight = memo(function Weight({ weightPercentage }) {
+   return (
+      <Typography variant="body2" fontWeight={500}>
+         {weightPercentage}%
+      </Typography>
+   )
+})
+
+const copyBtnVisibility = isMobile || isTablet ? 'always' : 'toggle'
+
 export const ItemRecipient = ({ zap, isNewZap, onRestartZap }) => {
-   const { weight = 0, amount = 0, pubkey, status } = zap
-   const weightPercentage = Math.round(weight * 100)
-   const sats = formatSats(amount)
-   const encodedNpub = encodeNpub(pubkey)
+   const { weight = 0, amount = 0, pubkey, meta, status } = zap
+   const weightPercentage = useMemo(() => Math.round(weight * 100), [weight])
+   const sats = useMemo(() => formatSats(amount), [amount])
+   const encodedNpub = useMemo(() => encodeNpub(pubkey), [pubkey])
+   const profile = useMemo(() => {
+      return { pubkey, meta }
+   }, [pubkey, meta])
 
    // eslint-disable-next-line
    const [_, copyToClipboard] = useCopyToClipboard()
 
-   const handleCopyUserNpub = () => {
+   const handleCopyUserNpub = useCallback(() => {
       copyToClipboard(encodedNpub)
       toast.success('Copied!')
-   }
+   }, [copyToClipboard, encodedNpub])
 
-   const statusIcon = renderZapStatus(status, isNewZap)
-
-   const copyBtnVisibility = isMobile || isTablet ? 'always' : 'toggle'
+   const statusIcon = useMemo(
+      () => renderZapStatus(status, isNewZap),
+      [status, isNewZap]
+   )
 
    return (
       <StyledListItem className={copyBtnVisibility}>
-         <Profile profile={zap} />
+         <Profile profile={profile} />
          <Stack direction="row" alignItems="center" gap="1rem">
-            <CopyButton onClick={handleCopyUserNpub} />
+            <Copy handleCopy={handleCopyUserNpub} />
             <Stack>
-               <Typography variant="body2" fontWeight={500}>
-                  {weightPercentage}%
-               </Typography>
+               <Weight weightPercentage={weightPercentage} />
                <StyledSatsView>{sats} sats</StyledSatsView>
             </Stack>
             {statusIcon && (

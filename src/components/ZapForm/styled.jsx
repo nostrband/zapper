@@ -43,3 +43,10 @@ export const SubmitButton = styled((props) => (
       cursor: 'not-allowed',
    },
 }))
+
+export const StyledHint = styled((props) => (
+   <Typography {...props} variant="caption" />
+))(({ theme }) => ({
+   textAlign: 'center',
+   color: `${theme.palette.text.primary}B3`,
+}))

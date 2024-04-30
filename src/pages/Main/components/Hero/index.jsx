@@ -18,7 +18,7 @@ export const Hero = () => {
    const handleInputChange = (e) => setId(e.target.value)
 
    return (
-      <Container>
+      <Container name="zap">
          <Stack gap="2rem">
             <StyledTitle>Send bulk lightning payments over nostr</StyledTitle>
             <Typography textAlign="center" maxWidth="640px" margin="0 auto">

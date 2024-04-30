@@ -2,10 +2,9 @@ import React, { useEffect, useState } from 'react'
 import { Box, CircularProgress, IconButton, Stack } from '@mui/material'
 import { FormProvider, useForm } from 'react-hook-form'
 import { useSearchParams } from 'react-router-dom'
-import { InfoButtonContainer, Container, StyledHint } from './styled'
+import { InfoButtonContainer, Container } from './styled'
 import { InfoIcon } from '../../assets/icons'
 import { ZapForm } from '../../components/ZapForm'
-import { getHeadingByTab } from './utils/helpers'
 import { EventDetails } from './components/EventDetails'
 import { useLoadZaps } from './hooks/useLoadZaps'
 import { ErrorBoundary } from './components/ErrorBoundary'
@@ -64,8 +63,6 @@ const Zapper = () => {
 
    const handleTabChange = (e, newType) => setType(newType)
 
-   const hint = getHeadingByTab(type)
-
    const handleSubmit = (values) => {
       if (!values.amount || !zaps.length) return
       sendNextZap()
@@ -103,8 +100,6 @@ const Zapper = () => {
                            isLoaded={isLoaded}
                         />
                      </FormProvider>
-
-                     <StyledHint>{hint}</StyledHint>
                   </Stack>
 
                   <EventDetails target={target} />
