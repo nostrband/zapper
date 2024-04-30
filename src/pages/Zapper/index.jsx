@@ -26,6 +26,7 @@ const Zapper = () => {
 
    const {
       isLoading,
+      isLoaded,
       error,
       zaps,
       target,
@@ -52,6 +53,10 @@ const Zapper = () => {
       const comment = searchParams.get('comment') || ''
       methods.setValue('comment', comment)
    }, [searchParams])
+
+   useEffect(() => {
+      if (isLoaded) methods.setFocus('amount')
+   }, [isLoaded])
 
    if (error) {
       return <ErrorBoundary error={error} />
@@ -95,6 +100,7 @@ const Zapper = () => {
                            zaps={zaps}
                            currentZap={currentZap}
                            onRetrySend={restartFailedZaps}
+                           isLoaded={isLoaded}
                         />
                      </FormProvider>
 

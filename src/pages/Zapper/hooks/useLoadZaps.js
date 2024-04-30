@@ -12,6 +12,7 @@ export const useLoadZaps = (type = 'zap', amount = 0, comment = '') => {
 
    const [isLoading, setIsLoading] = useState(true)
    const [error, setError] = useState('')
+   const [isLoaded, setIsLoaded] = useState(false)
 
    // params
    const id = searchParams.get('id') || ''
@@ -73,6 +74,7 @@ export const useLoadZaps = (type = 'zap', amount = 0, comment = '') => {
          if (!zapId) return setError('Specify id')
 
          try {
+            setIsLoaded(false)
             setError('')
             setIsLoading(true)
             const response = await loadTargetData(id)
@@ -82,6 +84,7 @@ export const useLoadZaps = (type = 'zap', amount = 0, comment = '') => {
             setRelays(relays)
             if (targetEvent) setTarget(targetEvent)
             setIsLoading(false)
+            setIsLoaded(true)
          } catch (error) {
             setError(error.message)
             setIsLoading(false)
@@ -90,6 +93,13 @@ export const useLoadZaps = (type = 'zap', amount = 0, comment = '') => {
       }
       load()
    }, [id])
+
+   useEffect(() => {
+      return () => {
+         setIsLoaded(false)
+         setIsLoading(false)
+      }
+   }, [])
 
    // recalculate the zap array if amount or targets change
    useEffect(() => {
@@ -229,5 +239,6 @@ export const useLoadZaps = (type = 'zap', amount = 0, comment = '') => {
       handleHideSuccessModal,
       restartFailedZaps,
       restartZap,
+      isLoaded,
    }
 }

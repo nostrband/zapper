@@ -1,20 +1,23 @@
 import React from 'react'
-import { Avatar, Button } from '@mui/material'
-import { Container, StyledAvatarGroup, Title } from './styled'
-import { MOCK_DEVELOPERS } from './const'
+import { Button } from '@mui/material'
+import { Container, StyledAvatarGroup, StyledSkeleton, Title } from './styled'
+import { ItemDeveloper } from './ItemDeveloper'
 
-export const Developers = () => {
+const MOCK_DATA = Array(7).fill(1)
+
+export const Developers = ({ items = [], title = '', isLoading = false }) => {
+   const renderContent = () => {
+      if (isLoading) {
+         // eslint-disable-next-line
+         return MOCK_DATA.map((v, idx) => <StyledSkeleton key={idx} />)
+      }
+      return items.map((dev) => <ItemDeveloper {...dev} key={dev.pubkey} />)
+   }
    return (
       <Container>
-         <Title>Support Nostr Developers</Title>
-         <StyledAvatarGroup max={7}>
-            {MOCK_DEVELOPERS.map((dev) => (
-               <Avatar key={dev.id} src={dev.picture} alt={dev.name}>
-                  {dev.name[0].toUpperCase()}
-               </Avatar>
-            ))}
-         </StyledAvatarGroup>
-         <Button>Zap Nostr Developers</Button>
+         <Title>Support {title}</Title>
+         <StyledAvatarGroup max={7}>{renderContent()}</StyledAvatarGroup>
+         <Button>Zap {title}</Button>
       </Container>
    )
 }

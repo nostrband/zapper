@@ -1,6 +1,11 @@
 import React, { useState } from 'react'
-import { Fade, Stack, Typography } from '@mui/material'
-import { StyledDateView, StyledExpandButton, StyledPre } from './styled'
+import { Fade, Stack } from '@mui/material'
+import {
+   StyledDateView,
+   StyledDescription,
+   StyledExpandButton,
+   StyledPre,
+} from './styled'
 import { Profile } from '../../../../shared/Profile'
 import { getSubtitle } from './helpers'
 import { formatDate } from '../../../../utils/helpers/general'
@@ -24,7 +29,9 @@ export const EventDetails = ({ target }) => {
                {target && (
                   <Stack gap="0.25rem">
                      <Profile profile={target} />
-                     <Typography>{getSubtitle(target)}</Typography>
+                     <StyledDescription>
+                        {getSubtitle(target)}
+                     </StyledDescription>
                      <StyledDateView>
                         {formatDate(target.created_at)}
                      </StyledDateView>

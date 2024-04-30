@@ -150,6 +150,15 @@ async function fetchEventByAddr(ndk, addr) {
    return null
 }
 
+async function fetchPrism(ndk, id) {
+   const list = await fetchEventById(ndk, id)
+   const pubkeys = []
+   list.tags.forEach((t) => {
+      if (t.length >= 2 && t[0] === 'zap') pubkeys.push(t[1])
+   })
+   return fetchMetas(ndk, pubkeys)
+}
+
 async function fetchInvoice(zap) {
    let url = `${zap.callback}${zap.callback.includes('?') ? '&' : '?'}amount=${
       zap.amount
@@ -338,6 +347,7 @@ export const nostr = {
    getNDK,
    fetchMetas,
    fetchEventByAddr,
+   fetchPrism,
    fetchEventById,
    createZap,
    sendZap,

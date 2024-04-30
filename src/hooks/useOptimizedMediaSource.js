@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { DefaultUserImage } from '../assets/images'
+import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined'
 
 const MEDIA_NOSTR_BAND_BASE_URL = 'https://media.nostr.band/thumbs'
 
@@ -46,11 +46,11 @@ export const useOptimizedMediaSource = ({
    }, [pubkey, originalImage, generatedURL])
 
    if (!pubkey || !originalImage || isGuest(pubkey)) {
-      return DefaultUserImage
+      return ImageOutlinedIcon
    }
 
    if (isLoading) {
-      return DefaultUserImage
+      return ImageOutlinedIcon
    }
 
    if (isFailed) {

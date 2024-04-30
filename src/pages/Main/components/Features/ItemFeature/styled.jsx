@@ -15,6 +15,9 @@ export const Container = styled(Box)(({ theme }) => ({
       padding: '1rem',
       gap: '0.5rem',
    },
+   '&:is(#about, #support)': {
+      cursor: 'pointer',
+   },
 }))
 
 export const Background = styled('div')(({ url }) => ({

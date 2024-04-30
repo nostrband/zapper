@@ -1,4 +1,4 @@
-import { AvatarGroup, Box, Typography, styled } from '@mui/material'
+import { AvatarGroup, Box, Skeleton, Typography, styled } from '@mui/material'
 import { SupportBackground } from '../../../../../assets/icons'
 
 export const Container = styled(Box)(({ theme }) => ({
@@ -18,7 +18,7 @@ export const Container = styled(Box)(({ theme }) => ({
    },
    backgroundImage: `url(${SupportBackground})`,
    backgroundRepeat: 'no-repeat',
-   backgroundPosition: 'center',
+   backgroundPosition: 'bottom center',
    backgroundSize: 'contain',
 }))
 
@@ -28,7 +28,7 @@ export const Title = styled((props) => (
    fontSize: '1.5rem',
    fontWeight: 600,
    '@media screen and (max-width: 485px)': {
-      fontSize: '1rem',
+      fontSize: '1.25rem',
    },
 }))
 
@@ -56,5 +56,19 @@ export const StyledAvatarGroup = styled((props) => (
       '@media screen and (max-width: 485px)': {
          marginLeft: '-12px',
       },
+   },
+}))
+
+export const StyledSkeleton = styled((props) => (
+   <Skeleton {...props} variant="circular" />
+))(({ theme }) => ({
+   width: 48,
+   height: 48,
+   border: `1px solid ${theme.palette.text.secondary}`,
+   marginLeft: '-16px',
+   '@media screen and (max-width: 485px)': {
+      width: 40,
+      height: 40,
+      marginLeft: '-12px',
    },
 }))

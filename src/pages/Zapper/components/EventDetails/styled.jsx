@@ -26,6 +26,13 @@ export const StyledPre = styled('pre')(({ theme }) => ({
    fontSize: '0.75rem',
 }))
 
+export const StyledDescription = styled((props) => <Typography {...props} />)(
+   ({ theme }) => ({
+      color: theme.palette.text.primary,
+      wordBreak: 'break-all',
+   })
+)
+
 export const StyledDateView = styled((props) => (
    <Typography {...props} variant="caption" />
 ))(({ theme }) => ({

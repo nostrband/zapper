@@ -18,11 +18,11 @@ export const Footer = () => {
             <StyledDescriptionText>
                Zapper is an open source project by{' '}
                <StyledLink
-                  href="https://nostr.band/npub1xdtducdnjerex88gkg2qk2atsdlqsyxqaag4h05jmcpyspqt30wscmntxy"
+                  href=" https://nostr.band"
                   target="_blank"
                   rel="noreferrer"
                >
-                  Artur Brugeman
+                  Nostr.Band
                </StyledLink>
                . Design by{' '}
                <StyledLink
