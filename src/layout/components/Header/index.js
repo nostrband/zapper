@@ -13,13 +13,21 @@ export const Header = () => {
    const { toggleColorMode, mode } = useContext(ColorModeContext)
    const darkMode = mode === 'dark'
 
+   const handleToggleColorMode = () => {
+      toggleColorMode()
+      // switch nostr-login too
+      document.dispatchEvent(
+         new CustomEvent('nlDarkMode', { detail: !darkMode })
+      )
+   }
+
    return (
       <StyledHeader>
          <InnerContainer>
             <AppLogo />
 
             <Stack direction="row" alignItems="center" gap="1.5rem">
-               <IconButton onClick={toggleColorMode}>
+               <IconButton onClick={handleToggleColorMode}>
                   {darkMode ? <LightModeIcon /> : <NightModeIcon />}
                </IconButton>
 
