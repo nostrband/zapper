@@ -1,19 +1,20 @@
+import { Stack } from '@mui/material'
 import { Hero } from './components/Hero'
 import { Features } from './components/Features'
-// import { NewZap } from './components/NewZap'
 import { Container } from './styled'
 import { Support } from './components/Support'
 import { Zap } from './components/Zap'
 
 function Root() {
    return (
-      <Container id="container">
+      <Stack gap="1rem">
          <Hero />
-         <Zap />
-         <Features />
-         <Support />
-         {/* <NewZap /> */}
-      </Container>
+         <Container>
+            <Zap />
+            <Features />
+            <Support />
+         </Container>
+      </Stack>
    )
 }
 

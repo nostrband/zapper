@@ -8,9 +8,9 @@ export const Container = styled(Stack)(() => ({
    position: 'relative',
    width: '100%',
    height: '100vh',
-   maxHeight: '450px',
+   maxHeight: '425px',
    '@media screen and (max-width: 485px)': {
-      maxHeight: '400px',
+      maxHeight: '325px',
       gap: '1.5rem',
    },
 }))

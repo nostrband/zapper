@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { useMediaQuery } from '@mui/material'
 import { useLocalStorage } from '@uidotdev/usehooks'
 
@@ -12,6 +12,13 @@ const ColorModeContextProvider = ({ children }) => {
    const systemMode = prefersDarkMode ? 'dark' : 'light'
 
    const [mode, setMode] = useLocalStorage('colorMode', systemMode)
+
+   useEffect(() => {
+      // switch nostr-login too
+      document.dispatchEvent(
+         new CustomEvent('nlDarkMode', { detail: mode === 'dark' })
+      )
+   }, [mode])
 
    const contextValues = useMemo(
       () => ({

@@ -15,10 +15,6 @@ export const Header = () => {
 
    const handleToggleColorMode = () => {
       toggleColorMode()
-      // switch nostr-login too
-      document.dispatchEvent(
-         new CustomEvent('nlDarkMode', { detail: !darkMode })
-      )
    }
 
    return (
