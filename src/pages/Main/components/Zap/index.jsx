@@ -1,13 +1,16 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { Container, StyledImageWrapper, StyledPreviewButton } from './styled'
-import { ZapperImage } from '../../../../assets/images'
+import { ZapperDarkImage, ZapperLightImage } from '../../../../assets/images'
+import { ColorModeContext } from '../../../../store/ColorMode.Context'
 
 export const Zap = () => {
+   const { mode } = useContext(ColorModeContext)
+   const image = mode === 'dark' ? ZapperDarkImage : ZapperLightImage
    return (
       <Container>
          <StyledPreviewButton />
          <StyledImageWrapper>
-            <img src={ZapperImage} alt="Zapper" />
+            <img src={image} alt="Zapper" />
          </StyledImageWrapper>
       </Container>
    )

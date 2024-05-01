@@ -4,6 +4,7 @@ import { EyeIcon, ZapperBackground } from '../../../../assets/icons'
 export const Container = styled(Box)(({ theme }) => ({
    position: 'relative',
    padding: '2rem 2.5rem',
+   paddingBottom: 0,
    borderRadius: '24px',
    border: `1px solid ${theme.palette.text.primary}1A`,
    width: '100%',
@@ -18,6 +19,7 @@ export const Container = styled(Box)(({ theme }) => ({
    backgroundSize: 'contain',
    '@media screen and (max-width: 485px)': {
       padding: '1rem 1.5rem',
+      paddingBottom: 0,
    },
 }))
 
@@ -44,10 +46,10 @@ export const StyledPreviewButton = styled((props) => (
 
 export const StyledImageWrapper = styled(Stack)(() => ({
    alignItems: 'center',
-   height: '400px',
+   height: '500px',
    width: '100%',
    '@media screen and (max-width: 485px)': {
-      height: '270px',
+      height: '400px',
    },
    '& > img': {
       objectFit: 'contain',

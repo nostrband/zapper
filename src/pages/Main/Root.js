@@ -9,8 +9,8 @@ function Root() {
    return (
       <Container id="container">
          <Hero />
-         <Features />
          <Zap />
+         <Features />
          <Support />
          {/* <NewZap /> */}
       </Container>
