@@ -1,15 +1,4 @@
-import { toast } from 'react-toastify'
 import { nip19 } from 'nostr-tools'
-
-export async function copy(v) {
-   try {
-      await navigator.clipboard.writeText(v)
-      toast.success('Copied!')
-   } catch (err) {
-      console.error('error', err)
-      toast.error('Failed to copy!')
-   }
-}
 
 export function formatAmount(a) {
    let s = a
@@ -37,4 +26,8 @@ export const encodeNpub = (pubkey) => {
 
 export const formatDate = (seconds = 0) => {
    return new Date(seconds * 1000).toLocaleString()
+}
+
+export const formatCurrency = (amount = 0) => {
+   return new Intl.NumberFormat('en').format(amount)
 }

@@ -1,0 +1,13 @@
+export { ReactComponent as AppLogoIcon } from './logo.svg'
+export { ReactComponent as LightModeIcon } from './sun.svg'
+export { ReactComponent as NightModeIcon } from './moon.svg'
+export { ReactComponent as GitHubLogoIcon } from './github.svg'
+export { ReactComponent as ArrowDownIcon } from './arrow-down.svg'
+export { ReactComponent as CopyIcon } from './copy.svg'
+export { ReactComponent as QRCodeIcon } from './qr-code.svg'
+export { ReactComponent as TextBadgePlusIcon } from './note-text-badge-plus.svg'
+export { ReactComponent as SuccessMarkIcon } from './success.svg'
+export { ReactComponent as ErrorMarkIcon } from './error.svg'
+
+export { default as SupportBackground } from './support-background.svg'
+export { default as ZapperBackground } from './zap-form-background.svg'

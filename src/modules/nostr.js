@@ -76,8 +76,8 @@ async function getNDK(relays) {
    if (!ndkObject) {
       relays = [...new Set([...relays, 'wss://relay.nostr.band/all'])]
 
-//      const nip07signer = hasNip07 ? new NDKNip07Signer() : null
-      ndkObject = new NDK()//{ signer: nip07signer })
+      //      const nip07signer = hasNip07 ? new NDKNip07Signer() : null
+      ndkObject = new NDK() //{ signer: nip07signer })
    }
 
    const rs = []
@@ -148,6 +148,15 @@ async function fetchEventByAddr(ndk, addr) {
    }
 
    return null
+}
+
+async function fetchPrism(ndk, id) {
+   const list = await fetchEventById(ndk, id)
+   const pubkeys = []
+   list.tags.forEach((t) => {
+      if (t.length >= 2 && t[0] === 'zap') pubkeys.push(t[1])
+   })
+   return fetchMetas(ndk, pubkeys)
 }
 
 async function fetchInvoice(zap) {
@@ -338,6 +347,7 @@ export const nostr = {
    getNDK,
    fetchMetas,
    fetchEventByAddr,
+   fetchPrism,
    fetchEventById,
    createZap,
    sendZap,

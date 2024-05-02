@@ -1,8 +1,6 @@
-import { Layout } from '../../layout/Layout'
-
 function About() {
    return (
-      <Layout>
+      <div>
          <h1 className="mb-4">Zapper is a Nostr micro-app for sending zaps.</h1>
 
          <h3>Why a separate micro-app?</h3>
@@ -59,7 +57,7 @@ function About() {
             </a>{' '}
             on Nostr.
          </p>
-      </Layout>
+      </div>
    )
 }
 
