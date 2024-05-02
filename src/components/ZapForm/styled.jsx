@@ -7,19 +7,8 @@ export const StyledTitle = styled((props) => (
    fontWeight: 600,
    lineHeight: '38.72px',
    textAlign: 'center',
-   '@media screen and (max-width: 485px)': {
-      fontSize: '1.75rem',
-   },
+   fontFamily: 'InterDisplay',
 })
-
-export const LogoWrapper = styled('div')(({ theme }) => ({
-   display: 'grid',
-   placeItems: 'center',
-   color: theme.palette.text.primary,
-   '& #logo-background': {
-      fill: theme.palette.mode === 'dark' ? '#FFFFFF1A' : '#3341551A',
-   },
-}))
 
 export const StyledForm = styled((props) => (
    <Stack {...props} component="form" />

@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { Box, CircularProgress, IconButton, Stack } from '@mui/material'
+import { CircularProgress, Stack } from '@mui/material'
 import { FormProvider, useForm } from 'react-hook-form'
 import { useSearchParams } from 'react-router-dom'
 import { useDebounce } from '@uidotdev/usehooks'
-import { InfoButtonContainer, Container } from './styled'
-import { InfoIcon } from '../../assets/icons'
+import { Container, PaddingContainer } from './styled'
 import { ZapForm } from '../../components/ZapForm'
 import { EventDetails } from './components/EventDetails'
 import { useLoadZaps } from './hooks/useLoadZaps'
@@ -75,14 +74,8 @@ const Zapper = () => {
    const isNewZap = !zaps.find((z) => z.status)
 
    return (
-      <Box paddingBottom="1.5rem">
+      <PaddingContainer>
          <Container>
-            <InfoButtonContainer>
-               <IconButton className="info_btn">
-                  <InfoIcon />
-               </IconButton>
-            </InfoButtonContainer>
-
             {isLoading && (
                <Stack alignItems="center" justifyContent="center" height="100%">
                   <CircularProgress />
@@ -144,7 +137,7 @@ const Zapper = () => {
                hasErrors={hasErrors}
             />
          </Container>
-      </Box>
+      </PaddingContainer>
    )
 }
 

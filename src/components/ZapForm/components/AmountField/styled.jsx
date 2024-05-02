@@ -28,6 +28,8 @@ export const StyledInput = styled(
    '@media screen and (max-width: 485px)': {
       fontSize: '3rem',
    },
+   maxHeight: 'initial',
+   fontFamily: 'InterDisplay',
 }))
 
 export const StyledIconButton = styled((props) => (

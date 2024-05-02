@@ -24,6 +24,7 @@ export const LogoWrapper = styled('div')(({ theme }) => ({
 export const AppTitle = styled(Typography)(({ theme }) => ({
    fontSize: '1.3125rem',
    fontWeight: 600,
+   fontFamily: 'InterDisplay',
    color: theme.palette.text.primary,
    '@media screen and (max-width: 485px)': {
       fontSize: '1.125rem',
