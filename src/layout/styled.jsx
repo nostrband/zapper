@@ -1,5 +1,10 @@
-import { Box, Container, styled } from '@mui/material'
-import { DecorDarkImage, DecorLightImage } from '../assets/images'
+import { Box, Container, styled, useMediaQuery } from '@mui/material'
+import {
+   DecorDarkImage,
+   DecorLightImage,
+   DecorDarkSmallImage,
+   DecorLightSmallImage,
+} from '../assets/images'
 
 export const StyledContainer = styled(Container)({
    display: 'flex',
@@ -12,10 +17,18 @@ export const StyledContainer = styled(Container)({
    },
 })
 
+const getGradientBackgroundSource = (mode, isMobile) => {
+   const darkMode = mode === 'dark'
+   if (isMobile) {
+      return darkMode ? DecorDarkSmallImage : DecorLightSmallImage
+   }
+   return mode === 'dark' ? DecorDarkImage : DecorLightImage
+}
+
 export const BackgroundContainer = styled(Box)(({ theme }) => {
-   const darkMode = theme.palette.mode === 'dark'
-   const decor = darkMode ? DecorDarkImage : DecorLightImage
-   const bgOnLightModeMobile = darkMode ? {} : { background: 'none' }
+   const isMobile = useMediaQuery('(max-width: 485px)')
+   const decor = getGradientBackgroundSource(theme.palette.mode, isMobile)
+
    return {
       position: 'absolute',
       top: 0,
@@ -31,7 +44,6 @@ export const BackgroundContainer = styled(Box)(({ theme }) => {
       backgroundPosition: 'top center',
       '@media screen and (max-width: 485px)': {
          fontSize: '0.75rem',
-         ...bgOnLightModeMobile,
       },
    }
 })
