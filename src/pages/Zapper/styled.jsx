@@ -12,7 +12,6 @@ export const Container = styled(Box)(({ theme }) => ({
    flexDirection: 'column',
    gap: '1.5rem',
    padding: '1.5rem 2rem',
-   borderRadius: '24px',
    borderTopLeftRadius: '24px',
    borderTopRightRadius: '24px',
    background:

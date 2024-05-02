@@ -13,8 +13,9 @@ export const StyledContainer = styled(Container)({
 })
 
 export const BackgroundContainer = styled(Box)(({ theme }) => {
-   const decor =
-      theme.palette.mode === 'dark' ? DecorDarkImage : DecorLightImage
+   const darkMode = theme.palette.mode === 'dark'
+   const decor = darkMode ? DecorDarkImage : DecorLightImage
+   const bgOnLightModeMobile = darkMode ? {} : { background: 'none' }
    return {
       position: 'absolute',
       top: 0,
@@ -27,5 +28,10 @@ export const BackgroundContainer = styled(Box)(({ theme }) => {
       height: '100%',
       backgroundSize: 'contain',
       backgroundRepeat: 'no-repeat',
+      backgroundPosition: 'top center',
+      '@media screen and (max-width: 485px)': {
+         fontSize: '0.75rem',
+         ...bgOnLightModeMobile,
+      },
    }
 })
