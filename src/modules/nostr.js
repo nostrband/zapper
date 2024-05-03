@@ -178,13 +178,13 @@ async function fetchInvoiceCallback(meta) {
    try {
       let lnurl = ''
       const { lud06, lud16 } = JSON.parse(meta.content)
-      if (lud06) {
+      if (lud16) {
+         const [name, domain] = lud16.split('@')
+         lnurl = `https://${domain}/.well-known/lnurlp/${name}`
+      } else if (lud06) {
          const { words } = bech32.decode(lud06, 1000)
          const data = bech32.fromWords(words)
          lnurl = utf8Decoder.decode(data)
-      } else if (lud16) {
-         const [name, domain] = lud16.split('@')
-         lnurl = `https://${domain}/.well-known/lnurlp/${name}`
       } else {
          return {}
       }

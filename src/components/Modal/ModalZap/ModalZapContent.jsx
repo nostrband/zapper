@@ -52,7 +52,7 @@ export const ModalZapContent = ({ currentZap, zaps, onDone, onClose }) => {
    const getAddress = () => {
       try {
          const { lud06, lud16 } = JSON.parse(currentZap.meta.content)
-         return lud06 || lud16
+         return lud16 || lud06
       } catch (e) {
          // eslint-disable-next-line no-console
          console.log('Bad meta', e)
