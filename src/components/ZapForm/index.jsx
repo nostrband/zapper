@@ -1,6 +1,10 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Stack, Typography } from '@mui/material'
 import { Controller, useFormContext } from 'react-hook-form'
+import {
+   Button as BCButton,
+   init as BCInit,
+} from '@getalby/bitcoin-connect-react'
 import { StyledForm, StyledHint, StyledTitle, SubmitButton } from './styled'
 import { Tabs } from './components/Tabs'
 import { AmountField } from './components/AmountField'
@@ -17,6 +21,10 @@ import { ZAP_STATUS } from '../../utils/constants/general'
 import { TYPE_SEND_SATS } from '../../modules/nostr'
 import { getHeadingByTab } from '../../pages/Zapper/utils/helpers'
 
+BCInit({
+   appName: 'Zapper',
+})
+
 export const ZapForm = ({
    onTypeChange,
    type,
@@ -32,6 +40,8 @@ export const ZapForm = ({
    // controls
    const [showAmountPicker, setShowAmountPicker] = useState(false)
    const [showCommentPicker, setShowCommentPicker] = useState(false)
+   const [hadWebLN, setHadWebLN] = useState(!!window.webln)
+   const [webLN, setWebLN] = useState(!!window.webln)
 
    const amount = watch('amount')
    const comment = watch('comment')
@@ -56,6 +66,23 @@ export const ZapForm = ({
          setValue('amount', value <= 0 ? 0 : value - 1)
       }
    }
+
+   const handleWebLN = (provider) => {
+      setWebLN(!!provider)
+      window.webln = provider
+   }
+
+   const handleWebLNDisconnect = () => {
+      setWebLN(false)
+      window.webln = undefined
+   }
+
+   useEffect(() => {
+      document.addEventListener('webln:connected', () => {
+         setHadWebLN(true)
+         setWebLN(!!window.webln)
+      })
+   })
 
    const showCommentField = type !== TYPE_SEND_SATS
    const allDone = !zaps.find((z) => z.status !== ZAP_STATUS.DONE)
@@ -99,13 +126,25 @@ export const ZapForm = ({
                )}
                {isNewZap && (
                   <>
-                     <SubmitButton
-                        type="submit"
-                        disabled={!amount || !zapsLength}
-                     >
-                        {submitText}
-                     </SubmitButton>
-                     <StyledHint>{hint}</StyledHint>
+                     {!hadWebLN && (
+                        <center>
+                           <BCButton
+                              onConnected={handleWebLN}
+                              onDisconnected={handleWebLNDisconnect}
+                           />
+                        </center>
+                     )}
+                     {webLN && (
+                        <>
+                           <SubmitButton
+                              type="submit"
+                              disabled={!amount || !zapsLength}
+                           >
+                              {submitText}
+                           </SubmitButton>
+                           <StyledHint>{hint}</StyledHint>
+                        </>
+                     )}
                   </>
                )}
                {!isNewZap && (
