@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Button } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast'
 import {
    Container,
    StyledForm,
@@ -16,10 +17,13 @@ export const Hero = () => {
 
    const handleSubmit = (e) => {
       e.preventDefault()
-      navigate({
-         pathname: '/zap',
-         search: `id=${id}`,
-      })
+      if (!id) toast.error('Specify event id or npub')
+      else {
+         navigate({
+            pathname: '/zap',
+            search: `id=${id}`,
+         })
+      }
    }
 
    const handleInputChange = (e) => setId(e.target.value)
