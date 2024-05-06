@@ -15,6 +15,7 @@ export const Container = styled(Box)(({ theme }) => ({
    gap: '1.5rem',
    '@media screen and (max-width: 485px)': {
       gap: '1rem',
+      minHeight: '237px',
    },
    backgroundImage: `url(${SupportBackground})`,
    backgroundRepeat: 'no-repeat',
@@ -27,6 +28,7 @@ export const Title = styled((props) => (
 ))(() => ({
    fontSize: '1.5rem',
    fontWeight: 600,
+   fontFamily: 'InterDisplay',
    '@media screen and (max-width: 485px)': {
       fontSize: '1.25rem',
    },

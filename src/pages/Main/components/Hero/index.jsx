@@ -1,7 +1,14 @@
-import { Button, Stack, Typography } from '@mui/material'
 import React, { useState } from 'react'
+import { Button } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
-import { Container, StyledForm, StyledInput, StyledTitle } from './styled'
+import {
+   Container,
+   StyledForm,
+   StyledInput,
+   StyledSubTitle,
+   StyledTitle,
+   TextContainer,
+} from './styled'
 
 export const Hero = () => {
    const navigate = useNavigate()
@@ -19,13 +26,13 @@ export const Hero = () => {
 
    return (
       <Container name="zap">
-         <Stack gap="2rem">
+         <TextContainer>
             <StyledTitle>Send bulk lightning payments over nostr</StyledTitle>
-            <Typography textAlign="center" maxWidth="640px" margin="0 auto">
+            <StyledSubTitle>
                Zapper is a micro-app that allows anyone to send a payment to
                multiple recipients at once.
-            </Typography>
-         </Stack>
+            </StyledSubTitle>
+         </TextContainer>
          <StyledForm component="form" onSubmit={handleSubmit}>
             <StyledInput
                value={id}

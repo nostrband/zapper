@@ -1,6 +1,12 @@
 import React from 'react'
 import { Developers } from './Developers'
-import { Container, Subtitle, Title } from './styled'
+import {
+   Container,
+   ContentContainer,
+   Subtitle,
+   TextContainer,
+   Title,
+} from './styled'
 import { useLoadItems } from './hooks/useLoadItems'
 
 const DEVELOPERS_ID =
@@ -20,35 +26,40 @@ export const Support = () => {
 
    return (
       <Container component="section" name="support">
-         <Title>See the zapper in action</Title>
-         <Subtitle>
-            Try our sample zap-prism events to support many of the nostr
-            developers and contributors.
-         </Subtitle>
-         <Developers
-            items={developers}
-            isLoading={isDevelopersLoading}
-            title="Nostr Developers"
-            eventId={DEVELOPERS_ID}
-         />
-         <Developers
-            items={operators}
-            isLoading={isOperatorsLoading}
-            title="Relay Operators"
-            eventId={OPERATORS_ID}
-         />
-         <Developers
-            items={memers}
-            isLoading={isMemersLoading}
-            title="Memers"
-            eventId={MEMERS_ID}
-         />
-         <Developers
-            items={podcasters}
-            isLoading={isPodcastersLoading}
-            title="Podcasters"
-            eventId={PODCASTERS_ID}
-         />
+         <TextContainer>
+            <Title>See the zapper in action</Title>
+            <Subtitle>
+               Try our sample zap-prism events to support many of the nostr
+               developers and contributors.
+            </Subtitle>
+         </TextContainer>
+
+         <ContentContainer>
+            <Developers
+               items={developers}
+               isLoading={isDevelopersLoading}
+               title="Nostr Developers"
+               eventId={DEVELOPERS_ID}
+            />
+            <Developers
+               items={operators}
+               isLoading={isOperatorsLoading}
+               title="Relay Operators"
+               eventId={OPERATORS_ID}
+            />
+            <Developers
+               items={memers}
+               isLoading={isMemersLoading}
+               title="Memers"
+               eventId={MEMERS_ID}
+            />
+            <Developers
+               items={podcasters}
+               isLoading={isPodcastersLoading}
+               title="Podcasters"
+               eventId={PODCASTERS_ID}
+            />
+         </ContentContainer>
       </Container>
    )
 }

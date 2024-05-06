@@ -22,7 +22,7 @@ export const Header = () => {
          <InnerContainer>
             <AppLogo />
 
-            <Stack direction="row" alignItems="center" gap="1.5rem">
+            <Stack direction="row" alignItems="center" gap="0.5rem">
                <IconButton onClick={handleToggleColorMode}>
                   {darkMode ? <LightModeIcon /> : <NightModeIcon />}
                </IconButton>

@@ -38,9 +38,13 @@ export const Background = styled('div')(({ url }) => ({
 export const Title = styled(Typography)(() => ({
    fontSize: '1.125rem',
    fontWeight: 600,
+   fontFamily: 'InterDisplay',
 }))
 
-export const Description = styled(Typography)(({ theme }) => ({
-   fontSize: '0.75rem',
-   color: theme.palette.text.secondary,
-}))
+export const Description = styled(Typography)(({ theme }) => {
+   const darkMode = theme.palette.mode === 'dark'
+   return {
+      fontSize: '0.875rem',
+      color: darkMode ? '#94A3B8' : theme.palette.text.primary,
+   }
+})

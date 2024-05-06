@@ -5,8 +5,8 @@ import { IntlProvider } from './modules/intl/IntlProvider'
 import reportWebVitals from './reportWebVitals'
 import { AppRoutes } from './routes/AppRoutes'
 import ColorModeContextProvider from './store/ColorMode.Context'
-import './assets/css/index.css'
 import ThemeProvider from './modules/theme/ThemeProvider'
+import './assets/css/index.css'
 
 const root = ReactDOM.createRoot(document.getElementById('root'))
 

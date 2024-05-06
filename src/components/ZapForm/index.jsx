@@ -1,18 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { Box, Stack, Typography } from '@mui/material'
+import { Stack, Typography } from '@mui/material'
 import { Controller, useFormContext } from 'react-hook-form'
 import {
    Button as BCButton,
    init as BCInit,
 } from '@getalby/bitcoin-connect-react'
-import {
-   LogoWrapper,
-   StyledForm,
-   StyledHint,
-   StyledTitle,
-   SubmitButton,
-} from './styled'
-import { AppLogoIcon } from '../../assets/icons'
+import { StyledForm, StyledHint, StyledTitle, SubmitButton } from './styled'
 import { Tabs } from './components/Tabs'
 import { AmountField } from './components/AmountField'
 import { CommentField } from './components/CommentField'
@@ -99,11 +92,6 @@ export const ZapForm = ({
    return (
       <>
          <Stack gap="1.5rem">
-            <Box paddingTop="0.5rem">
-               <LogoWrapper>
-                  <AppLogoIcon />
-               </LogoWrapper>
-            </Box>
             <StyledTitle>Send a payment</StyledTitle>
 
             <StyledForm onSubmit={handleSubmit(onSubmit)}>

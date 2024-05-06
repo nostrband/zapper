@@ -1,11 +1,19 @@
 import { Box, Stack, styled } from '@mui/material'
 
+export const PaddingContainer = styled(Box)(() => ({
+   padding: '1rem 0',
+   '@media screen and (max-width: 485px)': {
+      padding: '0',
+   },
+}))
+
 export const Container = styled(Box)(({ theme }) => ({
    display: 'flex',
    flexDirection: 'column',
    gap: '1.5rem',
    padding: '1.5rem 2rem',
-   borderRadius: '24px',
+   borderTopLeftRadius: '24px',
+   borderTopRightRadius: '24px',
    background:
       theme.palette.mode === 'light'
          ? theme.palette.background.default
@@ -22,6 +30,7 @@ export const Container = styled(Box)(({ theme }) => ({
          : 'linear-gradient(180deg, rgba(100, 116, 139, 0.0091) 49.5%, rgba(100, 116, 139, 0.13) 100%)',
    '@media screen and (max-width: 485px)': {
       padding: '1rem',
+      background: 'transparent',
    },
 }))
 

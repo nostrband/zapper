@@ -2,7 +2,7 @@ import { createTheme } from '@mui/material'
 
 const commonTheme = createTheme({
    typography: {
-      fontFamily: ['Inter', 'sans-serif'].join(','),
+      fontFamily: ['InterVariable', 'sans-serif'].join(','),
    },
    components: {
       MuiButton: {
@@ -18,6 +18,7 @@ const commonTheme = createTheme({
                   '&:hover': {
                      boxShadow: `0px 6px 4px 0px #ffffff1A inset`,
                   },
+                  maxHeight: '48px',
                }
 
                if (color === 'secondary') {
@@ -33,6 +34,13 @@ const commonTheme = createTheme({
          },
          defaultProps: {
             variant: 'contained',
+         },
+      },
+      MuiInputBase: {
+         styleOverrides: {
+            root: {
+               maxHeight: '48px',
+            },
          },
       },
    },
