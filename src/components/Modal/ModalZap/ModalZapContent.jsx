@@ -11,6 +11,7 @@ import { nostr } from '../../../modules/nostr'
 import { CopyIcon, QRCodeIcon } from '../../../assets/icons'
 import {
    StyledAddressView,
+   StyledHint,
    StyledIconButton,
    StyledInput,
    StyledLinkButton,
@@ -89,11 +90,17 @@ export const ModalZapContent = ({ currentZap, zaps, onDone, onClose }) => {
    const address = getAddress()
    const status = getZapStatus()
    const buttonText = getButtonText()
+   const needButton =
+      // currentZap.status === ZAP_STATUS.ERROR ||
+      currentZap.status === ZAP_STATUS.DONE
 
    const isReady =
       currentZap.invoice &&
       !currentZap.cancelled &&
-      (currentZap.status === 'waiting' || currentZap.status === 'error')
+      (currentZap.status === ZAP_STATUS.WAITING ||
+         currentZap.status === ZAP_STATUS.ERROR)
+
+   const isError = currentZap.status === ZAP_STATUS.ERROR
 
    const handleCopyInvoice = () => {
       copyToClipboard(currentZap.invoice)
@@ -107,7 +114,12 @@ export const ModalZapContent = ({ currentZap, zaps, onDone, onClose }) => {
                value={calculateProgress(currentZap.index + 1, zaps.length)}
             />
             <StyledAddressView>
-               {sats} sats {address && <>to {address}</>}
+               {sats} sats{' '}
+               {address && (
+                  <>
+                     to {address.substring(0, Math.min(address.length, 25))}...
+                  </>
+               )}
             </StyledAddressView>
 
             <Profile profile={currentZap} withBorder />
@@ -118,49 +130,66 @@ export const ModalZapContent = ({ currentZap, zaps, onDone, onClose }) => {
 
             {status && <StyledStatus>{status}</StyledStatus>}
 
-            {isReady && (
+            {(isReady || isError) && (
                <Stack gap="1rem" width="100%">
-                  {nostr.hasWebLN() && (
-                     <Typography>Please pay by invoice:</Typography>
+                  {!isError && (
+                     <>
+                        {!nostr.hasWebLN() && (
+                           <StyledHint>Please pay the invoice:</StyledHint>
+                        )}
+                        <Stack direction="row" gap="0.5rem">
+                           <StyledInput value={currentZap.invoice} />
+                           <StyledIconButton onClick={handleCopyInvoice}>
+                              <CopyIcon />
+                           </StyledIconButton>
+                           <StyledIconButton onClick={() => setShowQR(!showQR)}>
+                              <QRCodeIcon />
+                           </StyledIconButton>
+                        </Stack>
+
+                        <Fade in={showQR} unmountOnExit>
+                           <StyledQRCodeContainer onClick={handleCopyInvoice}>
+                              <canvas id="canvas" />
+                           </StyledQRCodeContainer>
+                        </Fade>
+                     </>
                   )}
                   <Stack direction="row" gap="0.5rem">
-                     <StyledInput value={currentZap.invoice} />
-                     <StyledIconButton onClick={handleCopyInvoice}>
-                        <CopyIcon />
-                     </StyledIconButton>
-                     <StyledIconButton onClick={() => setShowQR(!showQR)}>
-                        <QRCodeIcon />
-                     </StyledIconButton>
-                  </Stack>
-
-                  <Fade in={showQR} unmountOnExit>
-                     <StyledQRCodeContainer>
-                        <canvas id="canvas" />
-                     </StyledQRCodeContainer>
-                  </Fade>
-
-                  <Stack direction="row" gap="0.5rem">
-                     <StyledLinkButton
+                     {!isError && (
+                        <StyledLinkButton
+                           fullWidth
+                           href={`lightning:${currentZap.invoice}`}
+                           target="_blank"
+                        >
+                           Open Wallet
+                        </StyledLinkButton>
+                     )}
+                     <Button
                         fullWidth
-                        href={`lightning:${currentZap.invoice}`}
-                        target="_blank"
+                        color="secondary"
+                        onClick={currentZap.cancelled ? onClose : onDone}
                      >
-                        Open Wallet
-                     </StyledLinkButton>
-
-                     <Button fullWidth color="secondary" onClick={onDone}>
-                        {isLast ? 'Done' : 'Next'}
+                        {isLast || currentZap.cancelled ? 'Done' : 'Next'}
                      </Button>
                   </Stack>
 
-                  <Divider />
+                  {!isError && (
+                     <StyledHint>
+                        Pay with your wallet and then tap &quot;
+                        {isLast ? 'Done' : 'Next'}&quot;.
+                     </StyledHint>
+                  )}
+
+                  {needButton && <Divider />}
                </Stack>
             )}
          </Stack>
 
-         <Button variant="contained" color="secondary" onClick={onClose}>
-            {buttonText}
-         </Button>
+         {needButton && (
+            <Button variant="contained" color="secondary" onClick={onClose}>
+               {buttonText}
+            </Button>
+         )}
       </Stack>
    )
 }

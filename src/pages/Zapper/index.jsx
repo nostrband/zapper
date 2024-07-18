@@ -14,16 +14,27 @@ import { ZAP_STATUS } from '../../utils/constants/general'
 import { Logs } from './components/Logs'
 import { ModalAutoZap } from '../../components/Modal/ModalAutoZap'
 import { ModalSuccess } from '../../components/Modal/ModalSuccess'
+import { TYPE_ANON_ZAP, TYPE_ZAP } from '../../modules/nostr'
 
 const Zapper = () => {
+   // const [authed, setAuthed] = useState(false)
+
    const methods = useForm()
    const [searchParams] = useSearchParams()
 
-   const [type, setType] = useState('zap')
+   const [type, setType] = useState(TYPE_ANON_ZAP)
    const enteredAmount = Number(methods.watch('amount')) || 0
    const debouncedAmount = useDebounce(enteredAmount, 400)
    const enteredComment = methods.watch('comment')
    const debouncedComment = useDebounce(enteredComment, 200)
+
+   useEffect(() => {
+      document.addEventListener('nlAuth', async (e) => {
+         // setAuthed(e.detail.type !== 'logout')
+         const authed = e.detail.type !== 'logout'
+         setType(authed ? TYPE_ZAP : TYPE_ANON_ZAP)
+      })
+   }, [])
 
    const {
       isLoading,
@@ -45,7 +56,7 @@ const Zapper = () => {
    } = useLoadZaps(type, debouncedAmount, debouncedComment)
 
    useEffect(() => {
-      const zapType = searchParams.get('type') || 'zap'
+      const zapType = searchParams.get('type') || TYPE_ANON_ZAP
       setType(zapType)
 
       const amount = Number(searchParams.get('amount')) || 0

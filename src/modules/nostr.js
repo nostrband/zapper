@@ -72,6 +72,10 @@ enableWindowInterface('webln', () => {
    window.webln.enable()
 })
 
+export function setWebLNEnabled(e) {
+   hasWebLN = e
+}
+
 async function getNDK(relays) {
    if (!ndkObject) {
       relays = [...new Set([...relays, 'wss://relay.nostr.band/all'])]
@@ -170,7 +174,12 @@ async function fetchInvoice(zap) {
    console.log('invoice url', zap, url)
 
    const res = await fetch(url)
+   console.log('invoice url result', res)
+   if (res.status !== 200) throw new Error('Failed to fetch invoice')
+
    const body = await res.json()
+   if (body.status !== 'OK') throw new Error('Failed to generate invoice')
+
    return body.pr
 }
 

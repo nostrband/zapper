@@ -2,12 +2,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { getZaps, loadTargetData } from '../utils/data'
-import { cancelZap, nostr } from '../../../modules/nostr'
+import { TYPE_ZAP, cancelZap, nostr } from '../../../modules/nostr'
 import { ZAP_STATUS } from '../../../utils/constants/general'
 import { formatSats } from '../../../utils/helpers/general'
 import { Notification } from '../../../components/Notification'
 
-export const useLoadZaps = (type = 'zap', amount = 0, comment = '') => {
+export const useLoadZaps = (type = TYPE_ZAP, amount = 0, comment = '') => {
    const [searchParams, setSearchParams] = useSearchParams()
 
    const [isLoading, setIsLoading] = useState(true)
@@ -196,6 +196,7 @@ export const useLoadZaps = (type = 'zap', amount = 0, comment = '') => {
       if (
          currentZap.status !== ZAP_STATUS.DONE &&
          currentZap.status !== ZAP_STATUS.ERROR &&
+         currentZap.status !== ZAP_STATUS.WAITING &&
          !currentZap.cancelled
       ) {
          cancelZap()
@@ -210,6 +211,7 @@ export const useLoadZaps = (type = 'zap', amount = 0, comment = '') => {
       // only go to next one if it's our first pass
       // and we still have non-tried receivers
       if (zaps.find((z) => !z.status)) sendNextZap() // next one
+      else if (zaps.length === 1) cancelCurrentZap() // close the modal
    }
 
    const handleHideSuccessModal = () => {
