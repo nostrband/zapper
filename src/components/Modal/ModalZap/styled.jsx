@@ -77,3 +77,10 @@ export const StyledProgress = styled((props) => (
    width: '100%',
    borderRadius: '24px',
 }))
+
+export const StyledHint = styled((props) => (
+   <Typography {...props} variant="caption" />
+))(({ theme }) => ({
+   textAlign: 'center',
+   color: `${theme.palette.text.primary}B3`,
+}))

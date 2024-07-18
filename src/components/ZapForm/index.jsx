@@ -18,7 +18,7 @@ import { formatCurrency } from '../../utils/helpers/general'
 import { ModalPickComment } from '../Modal/ModalPickComment'
 import { ModalPickAmount } from '../Modal/ModalPickAmount'
 import { ZAP_STATUS } from '../../utils/constants/general'
-import { TYPE_SEND_SATS } from '../../modules/nostr'
+import { TYPE_SEND_SATS, setWebLNEnabled } from '../../modules/nostr'
 import { getHeadingByTab } from '../../pages/Zapper/utils/helpers'
 
 BCInit({
@@ -70,10 +70,12 @@ export const ZapForm = ({
    const handleWebLN = (provider) => {
       setWebLN(!!provider)
       window.webln = provider
+      setWebLNEnabled(!!provider)
    }
 
    const handleWebLNDisconnect = () => {
       setWebLN(false)
+      setWebLNEnabled(false)
       window.webln = undefined
    }
 
@@ -126,25 +128,24 @@ export const ZapForm = ({
                )}
                {isNewZap && (
                   <>
-                     {!hadWebLN && (
+                     {(webLN || !hadWebLN) && (
                         <center>
                            <BCButton
                               onConnected={handleWebLN}
                               onDisconnected={handleWebLNDisconnect}
                            />
+                           {!webLN && (
+                              <StyledHint>or proceed with QR codes</StyledHint>
+                           )}
                         </center>
                      )}
-                     {webLN && (
-                        <>
-                           <SubmitButton
-                              type="submit"
-                              disabled={!amount || !zapsLength}
-                           >
-                              {submitText}
-                           </SubmitButton>
-                           <StyledHint>{hint}</StyledHint>
-                        </>
-                     )}
+                     <SubmitButton
+                        type="submit"
+                        disabled={!amount || !zapsLength}
+                     >
+                        {submitText}
+                     </SubmitButton>
+                     <StyledHint>{hint}</StyledHint>
                   </>
                )}
                {!isNewZap && (
