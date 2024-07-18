@@ -178,7 +178,7 @@ async function fetchInvoice(zap) {
    if (res.status !== 200) throw new Error('Failed to fetch invoice')
 
    const body = await res.json()
-   if (body.status !== 'OK') throw new Error('Failed to generate invoice')
+   if (body.status === 'ERROR') throw new Error('Failed to generate invoice')
 
    return body.pr
 }
