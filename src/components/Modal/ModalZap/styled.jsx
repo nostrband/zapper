@@ -8,7 +8,7 @@ import {
    Stack,
    LinearProgress,
 } from '@mui/material'
-import { forwardRef } from 'react'
+import React, { forwardRef } from 'react'
 
 export const StyledAddressView = styled((props) => <Typography {...props} />)(
    () => ({

@@ -1,4 +1,4 @@
-import { nostr } from '../../../../modules/nostr'
+import { nostr } from '../../modules/nostr'
 
 export const getSubtitle = (target) => {
    if (target.kind === 1) {

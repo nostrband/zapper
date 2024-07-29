@@ -1,5 +1,5 @@
+import React, { forwardRef } from 'react'
 import { InputBase, Stack, Typography, styled } from '@mui/material'
-import { forwardRef } from 'react'
 
 export const Container = styled(Stack)(() => ({
    gap: '3rem',

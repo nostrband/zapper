@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Document</title>
+      <link rel="stylesheet" href="./dist/assets/css/bundle.css" />
+   </head>
+   <body>
+      <button data-zapper-button="true">Test</button>
+      <script src="./dist/index.js"></script>
+      <script>
+         function initZapper() {
+            const targetButtons = document.querySelectorAll(
+               '[data-zapper-button]'
+            )
+            targetButtons.forEach((target) => {
+               target.addEventListener('click', () =>
+                  Zapper.launchZapModal({
+                     id: 'note1kgtwrdxsv8r47v2xf40wsd7v2h7gxfack6nevgnpdjm84ccgyjssy70k9j',
+                  })
+               )
+            })
+         }
+         initZapper()
+      </script>
+   </body>
+</html>

@@ -1,5 +1,6 @@
 import { IconButton, ListItem, Typography, styled } from '@mui/material'
-import { CopyIcon } from '../../../../../assets/icons'
+import React from 'react'
+import { CopyIcon } from '../../../assets/icons'
 
 export const StyledListItem = styled(ListItem)(({ theme }) => ({
    display: 'flex',

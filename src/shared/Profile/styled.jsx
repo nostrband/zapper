@@ -1,4 +1,5 @@
 import { Avatar, Stack, Typography, styled } from '@mui/material'
+import React from 'react'
 
 export const Container = styled((props) => (
    <Stack {...props} direction="row" />

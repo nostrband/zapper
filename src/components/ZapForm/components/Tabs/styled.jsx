@@ -1,4 +1,5 @@
 import { Tab, Tabs, styled } from '@mui/material'
+import React from 'react'
 
 export const StyledTabs = styled((props) => (
    <Tabs {...props} classes={{ flexContainer: 'flexer' }} scrollButtons />
