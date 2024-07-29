@@ -1,4 +1,5 @@
 import { nip19 } from 'nostr-tools'
+import { TYPE_ANON_ZAP, TYPE_ZAP } from '../../modules/nostr'
 
 export function formatAmount(a) {
    let s = a
@@ -30,4 +31,14 @@ export const formatDate = (seconds = 0) => {
 
 export const formatCurrency = (amount = 0) => {
    return new Intl.NumberFormat('en').format(amount)
+}
+
+export const getHeadingByTab = (type) => {
+   if (type === TYPE_ZAP) {
+      return 'Zap will be published on Nostr under your name.'
+   }
+   if (type === TYPE_ANON_ZAP) {
+      return 'Zap will be published on Nostr anonymously.'
+   }
+   return 'No event will be published on Nostr.'
 }

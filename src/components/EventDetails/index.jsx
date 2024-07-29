@@ -6,9 +6,9 @@ import {
    StyledExpandButton,
    StyledPre,
 } from './styled'
-import { Profile } from '../../../../shared/Profile'
 import { getSubtitle } from './helpers'
-import { formatDate } from '../../../../utils/helpers/general'
+import { Profile } from '../../shared/Profile'
+import { formatDate } from '../../utils/helpers/general'
 
 export const EventDetails = ({ target }) => {
    const [expanded, setExpanded] = useState(false)

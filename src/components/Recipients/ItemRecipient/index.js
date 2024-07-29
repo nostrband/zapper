@@ -8,8 +8,8 @@ import Clear from '@mui/icons-material/ClearOutlined'
 import Check from '@mui/icons-material/CheckRounded'
 import { isMobile, isTablet } from 'react-device-detect'
 import { CopyButton, StyledListItem, StyledSatsView } from './styled'
-import { encodeNpub, formatSats } from '../../../../../utils/helpers/general'
-import { Profile } from '../../../../../shared/Profile'
+import { encodeNpub, formatSats } from '../../../utils/helpers/general'
+import { Profile } from '../../../shared/Profile'
 
 const renderZapStatus = (status, isNewZap) => {
    switch (status) {

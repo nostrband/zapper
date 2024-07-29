@@ -5,20 +5,18 @@ import { useSearchParams } from 'react-router-dom'
 import { useDebounce } from '@uidotdev/usehooks'
 import { Container, PaddingContainer } from './styled'
 import { ZapForm } from '../../components/ZapForm'
-import { EventDetails } from './components/EventDetails'
-import { useLoadZaps } from './hooks/useLoadZaps'
-import { ErrorBoundary } from './components/ErrorBoundary'
-import { Recipients } from './components/Recipients'
 import { ModalZap } from '../../components/Modal/ModalZap'
 import { ZAP_STATUS } from '../../utils/constants/general'
-import { Logs } from './components/Logs'
 import { ModalAutoZap } from '../../components/Modal/ModalAutoZap'
 import { ModalSuccess } from '../../components/Modal/ModalSuccess'
 import { TYPE_ANON_ZAP, TYPE_ZAP } from '../../modules/nostr'
+import { useLoadZaps } from '../../hooks/useLoadZaps'
+import { ErrorBoundary } from '../../components/ErrorBoundary'
+import { EventDetails } from '../../components/EventDetails'
+import { Recipients } from '../../components/Recipients'
+import { Logs } from '../../components/Logs'
 
 const Zapper = () => {
-   // const [authed, setAuthed] = useState(false)
-
    const methods = useForm()
    const [searchParams] = useSearchParams()
 
@@ -30,7 +28,6 @@ const Zapper = () => {
 
    useEffect(() => {
       document.addEventListener('nlAuth', async (e) => {
-         // setAuthed(e.detail.type !== 'logout')
          const authed = e.detail.type !== 'logout'
          setType(authed ? TYPE_ZAP : TYPE_ANON_ZAP)
       })

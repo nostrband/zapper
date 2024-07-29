@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { Alert, Box, IconButton, styled } from '@mui/material'
-import { forwardRef } from 'react'
+import React, { forwardRef } from 'react'
 
 export const StyledAlert = styled(
    forwardRef((props, ref) => <Alert {...props} ref={ref} icon={false} />)

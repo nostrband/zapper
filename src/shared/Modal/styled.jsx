@@ -1,3 +1,4 @@
+import React from 'react'
 import { Box, Dialog, DialogContent, DialogTitle, styled } from '@mui/material'
 
 export const StyledDialog = styled((props) => (

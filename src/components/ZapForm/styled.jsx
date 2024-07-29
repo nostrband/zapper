@@ -1,3 +1,4 @@
+import React from 'react'
 import { Button, Stack, Typography, styled } from '@mui/material'
 
 export const StyledTitle = styled((props) => (

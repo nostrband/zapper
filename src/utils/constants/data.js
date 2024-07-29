@@ -1,5 +1,5 @@
 import { nip19 } from 'nostr-tools'
-import { TYPE_ZAP, nostr } from '../../../modules/nostr'
+import { nostr, TYPE_ZAP } from '../../modules/nostr'
 
 export const loadTargetData = async (id) => {
    if (!id) throw new Error('Specify id')

@@ -1,7 +1,11 @@
+import React from 'react'
 import { Paper, styled } from '@mui/material'
 
-export const StyledPaper = styled((props) => <Paper {...props} />)(
-   ({ theme }) => ({
+export const StyledPaper = styled((props) => <Paper {...props} />)(({
+   theme,
+   withShadow,
+}) => {
+   const styles = {
       borderRadius: '10px',
       padding: '2rem 1rem',
       maxWidth: '40rem',
@@ -13,5 +17,13 @@ export const StyledPaper = styled((props) => <Paper {...props} />)(
          theme.palette.mode === 'light'
             ? theme.palette.background.default
             : `${theme.palette.background.default}B3`,
-   })
-)
+   }
+
+   if (!withShadow) {
+      return {
+         ...styles,
+         boxShadow: 'none',
+      }
+   }
+   return styles
+})

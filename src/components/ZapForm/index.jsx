@@ -14,12 +14,11 @@ import {
    getStatusLabel,
    getSubmitLabel,
 } from './utils/helpers'
-import { formatCurrency } from '../../utils/helpers/general'
+import { formatCurrency, getHeadingByTab } from '../../utils/helpers/general'
 import { ModalPickComment } from '../Modal/ModalPickComment'
 import { ModalPickAmount } from '../Modal/ModalPickAmount'
 import { ZAP_STATUS } from '../../utils/constants/general'
 import { TYPE_SEND_SATS, setWebLNEnabled } from '../../modules/nostr'
-import { getHeadingByTab } from '../../pages/Zapper/utils/helpers'
 
 BCInit({
    appName: 'Zapper',

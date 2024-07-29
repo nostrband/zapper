@@ -1,5 +1,6 @@
-import { Button, Typography, styled } from '@mui/material'
-import { ArrowDownIcon } from '../../../../assets/icons'
+import React from 'react'
+import { Button, styled } from '@mui/material'
+import { ArrowDownIcon } from '../../assets/icons'
 
 export const StyledExpandButton = styled((props) => (
    <Button variant="text" {...props} endIcon={<ArrowDownIcon />} />
@@ -24,17 +25,4 @@ export const StyledPre = styled('pre')(({ theme }) => ({
    padding: '0.5rem 1rem',
    borderRadius: '10px',
    fontSize: '0.75rem',
-}))
-
-export const StyledDescription = styled((props) => <Typography {...props} />)(
-   ({ theme }) => ({
-      color: theme.palette.text.primary,
-      wordBreak: 'break-all',
-   })
-)
-
-export const StyledDateView = styled((props) => (
-   <Typography {...props} variant="caption" />
-))(({ theme }) => ({
-   color: theme.palette.text.secondary,
 }))

@@ -1,3 +1,4 @@
+import React from 'react'
 import { Typography, styled } from '@mui/material'
 
 export const StyledSectionTitle = styled((props) => <Typography {...props} />)({
