@@ -6,7 +6,7 @@ export const loadTargetData = async (id) => {
 
    const targets = []
    let target = ''
-   let relays = ['wss://nostr.mutinywallet.com']
+   let relays = ['wss://relay.nostr.band/']
    const { type: idType, data } = nip19.decode(id)
    switch (idType) {
       case 'npub':
